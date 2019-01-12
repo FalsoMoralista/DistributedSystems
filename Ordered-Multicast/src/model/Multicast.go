@@ -7,7 +7,7 @@ import (
 )
 
 type Multicast struct {
-	udpAddr *net.UDPAddr
+	serverAddr *net.UDPAddr
 
 }
 
@@ -21,7 +21,7 @@ func NewMulticast(address string) * Multicast{
 	checkError(err) // check if there was an error
 
 	return &Multicast{ // otherwise return a pointer to a Multicast
-		udpAddr:parsedAddr,
+		serverAddr:parsedAddr,
 	}
 }
 
@@ -29,8 +29,8 @@ func NewMulticast(address string) * Multicast{
 * Returns the udp address for a Multicast instance
 *
 **/
-func GetUdpAddr(this *Multicast) *net.UDPAddr{
-	return this.udpAddr
+func GetServerAddr(this *Multicast) *net.UDPAddr{
+	return this.serverAddr
 }
 
 
@@ -42,4 +42,19 @@ func checkError(err error) {
 		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
 		os.Exit(1)
 	}
+}
+
+func StartConnection(this *Multicast)(*net.UDPConn, error){
+	conn,err := net.DialUDP("udp",nil,this.serverAddr)
+	checkError(err)
+	int ,err := conn.Write([]byte("init"))
+	if(int == 0){
+		fmt.Print("Connection error")
+	}
+	checkError(err)
+	var buffer[512]byte
+	n,err := conn.Read(buffer[0:])
+	checkError(err)
+	fmt.Print(string(buffer[0:n]))
+	return conn,err
 }

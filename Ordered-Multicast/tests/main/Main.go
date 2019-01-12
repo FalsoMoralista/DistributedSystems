@@ -2,11 +2,16 @@ package main
 
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
+	"distributed-systems/Ordered-Multicast/src/server"
 	"fmt"
 )
 
 func main(){
-	multicast := model.NewMulticast("192.168.1.17:1010")
-	addr := model.GetUdpAddr(multicast)
-	fmt.Print(addr.String())
+	udpServer := server.NewUdpServer("luciano:1044")
+	go server.Run(udpServer)
+	multicast := model.NewMulticast("luciano:1044")
+	_,err := model.StartConnection(multicast)
+	if(err != nil){
+		fmt.Print(err)
+	}
 }
