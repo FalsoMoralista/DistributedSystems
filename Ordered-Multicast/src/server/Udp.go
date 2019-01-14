@@ -32,10 +32,11 @@ func NewUdpServer(address string) *UdpServer{
 * Starts the server
 **/
 func Run(this *UdpServer){
-	fmt.Print("Server started | Address :"+this.address.String()+" listening...")
+	fmt.Println("Server: Starting | Address :"+this.address.String()+" listening...")
 	conn, err := net.ListenUDP("udp",this.address) // allocates a connection
 	checkError(err)
 	for{
+		fmt.Println("Server: Done")
 		handleClient(conn)
 	}
 }
@@ -44,15 +45,16 @@ func Run(this *UdpServer){
 * Handle client connections
 **/
 func handleClient(conn *net.UDPConn){
+	fmt.Println("Server: Message arrived")
 	var buf [512]byte
-	_, addr, err := conn.ReadFromUDP(buf[0:])
+	n, addr, err := conn.ReadFromUDP(buf[0:])
 	if err != nil {
+		fmt.Print("Error, returning...")
 		return
 	}
-	n,err := conn.Read(buf[0:])
 	checkError(err)
-	fmt.Print(string(buf[0:n]))
-	conn.WriteToUDP([]byte("msg received"), addr)
+	fmt.Println("Server: Content:",string(buf[0:n]))
+	conn.WriteToUDP([]byte("ack"), addr)
 }
 
 /**
