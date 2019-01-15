@@ -65,11 +65,14 @@ func TestConnection(this *Multicast)(*net.UDPConn, error){
 *  Send a message through a udp socket
 **/
 func SendUdp(message UdpMessage){
-	conn,err := net.DialUDP("udp",nil,message.GetRecipient())
+	parsedAddr,err := net.ResolveUDPAddr("udp4",message.recipientAddr) // TODO REVIEW ADDRESS
+	checkError(err) // check if there was an error
+	conn,err := net.DialUDP("udp",nil,parsedAddr)
 	checkError(err)
 	int ,err := conn.Write([]byte("MESSAGE")) // TODO: Verify how to convert from generic type into byte array
 	if(int == 0){
 		fmt.Println("Error")
 	}
 	checkError(err)
+	//net.ListenMulticastUDP()
 }

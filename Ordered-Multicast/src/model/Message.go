@@ -1,38 +1,41 @@
 package model
 
-import "net"
-
 type Message interface {
 	HasAttachment() bool
-	GetSender()*net.UDPAddr
-	GetRecipient()*net.UDPAddr
+	GetSender() string
+	GetRecipient()string
 }
 
-// ################ UDP ################
+//################################################################ UDP ######################################################################
 
 type UdpMessage struct {
-	sender *net.UDPAddr
-	recipient *net.UDPAddr
-	attachment interface{} // (generic object)
+	senderAddr string
+	recipientAddr string
+	attachment interface{}
 }
 
-func NewUdpMessage(senderAddr *net.UDPAddr, recipientAddr *net.UDPAddr, obj interface{})*UdpMessage{
-	return &UdpMessage{
-		sender:senderAddr,
-		recipient:recipientAddr,
-		attachment:obj,
-	}
+func NewUdpMessage(senderAddr string, recipientAddr string, attachment interface{}) *UdpMessage {
+	return &UdpMessage{senderAddr: senderAddr, recipientAddr: recipientAddr, attachment: attachment}
 }
 
-func (this UdpMessage) HasAttatchment() bool{
+func (this *UdpMessage) RecipientAddr() string {
+	return this.recipientAddr
+}
+
+func (this *UdpMessage) SetRecipientAddr(recipientAddr string) {
+	this.recipientAddr = recipientAddr
+}
+
+func (this *UdpMessage) SenderAddr() string {
+	return this.senderAddr
+}
+
+func (this *UdpMessage) SetSenderAddr(senderAddr string) {
+	this.senderAddr = senderAddr
+}
+
+
+func (this UdpMessage) HasAttachment() bool{
 	return this.attachment != nil
-}
-
-func (this UdpMessage) GetRecipient() *net.UDPAddr{
-	return 	this.recipient
-}
-
-func (this UdpMessage) GetSender() *net.UDPAddr{
-	return 	this.sender
 }
 //###############################################################################################################################################################################################################################
