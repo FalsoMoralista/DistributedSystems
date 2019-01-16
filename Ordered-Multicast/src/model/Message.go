@@ -1,41 +1,50 @@
 package model
 
-type Message interface {
-	HasAttachment() bool
-	GetSender() string
-	GetRecipient()string
+
+// This is the structure of a Message that will be exchanged between peers on the network
+type Message struct {
+	seq uint // Sequence number
+	senderAddr string // Sender address
+	recipientAddr string // Recipient address
+	attachment interface{} // Payload
 }
 
-//################################################################ UDP ######################################################################
-
-type UdpMessage struct {  // TODO Refactor: create message struct
-	senderAddr string `json:"senderAddr,omitempty"`
-	recipientAddr string `json:"recipientAddr,omitempty"`
-	attachment interface{} `json:"attachment"`
+func NewMessage(seq uint, senderAddr string, recipientAddr string, attachment interface{}) *Message {
+	return &Message{seq: seq, senderAddr: senderAddr, recipientAddr: recipientAddr, attachment: attachment}
 }
 
-func NewUdpMessage(senderAddr string, recipientAddr string, attachment interface{}) *UdpMessage {
-	return &UdpMessage{senderAddr: senderAddr, recipientAddr: recipientAddr, attachment: attachment}
+func (this *Message) Attachment() interface{} {
+	return this.attachment
 }
 
-func (this *UdpMessage) RecipientAddr() string {
+func (this *Message) SetAttachment(attachment interface{}) {
+	this.attachment = attachment
+}
+
+func (this *Message) RecipientAddr() string {
 	return this.recipientAddr
 }
 
-func (this *UdpMessage) SetRecipientAddr(recipientAddr string) {
+func (this *Message) SetRecipientAddr(recipientAddr string) {
 	this.recipientAddr = recipientAddr
 }
 
-func (this *UdpMessage) SenderAddr() string {
+func (this *Message) SenderAddr() string {
 	return this.senderAddr
 }
 
-func (this *UdpMessage) SetSenderAddr(senderAddr string) {
+func (this *Message) SetSenderAddr(senderAddr string) {
 	this.senderAddr = senderAddr
 }
 
+func (this *Message) Seq() uint {
+	return this.seq
+}
 
-func (this UdpMessage) HasAttachment() bool{
+func (this *Message) SetSeq(seq uint) {
+	this.seq = seq
+}
+
+func (this *Message) HasAttachment() bool{
 	return this.attachment != nil
 }
-//###############################################################################################################################################################################################################################

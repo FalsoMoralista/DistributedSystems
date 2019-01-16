@@ -6,8 +6,8 @@ import (
 	"fmt"
 )
 
-// Encode a model.UdpMessage to JSON format
-func UdpMessageToJSON(message *model.UdpMessage) ([]byte, error){ // TODO verify how to encode correctly
+// Encode a model.Message to JSON format
+func UdpMessageToJSON(message *model.Message) ([]byte, error){ // TODO verify how to encode correctly
 	byteArr,err := json.Marshal(message)
 	if(err == nil){
 		return nil,err
@@ -16,11 +16,11 @@ func UdpMessageToJSON(message *model.UdpMessage) ([]byte, error){ // TODO verify
 }
 
 // Decode a JSON format to model.Message
-func JSONToUdpMessage(jsn []byte) (*model.UdpMessage, error){
-	var msg model.UdpMessage
+func JSONToUdpMessage(jsn []byte) (*model.Message, error){
+	var msg model.Message
 	err := json.Unmarshal(jsn,&msg)
 	if(err != nil){
-		return model.NewUdpMessage("","",nil),err
+		return model.NewMessage(0,"","",nil),err
 	}
 	return &msg, nil
 }
@@ -28,7 +28,7 @@ func JSONToUdpMessage(jsn []byte) (*model.UdpMessage, error){
 
 func main(){ // TODO TEST
 	fmt.Println("test")
-	msg := model.NewUdpMessage("luciano:1041", "jhonson:1041","roulli molly")
+	msg := model.NewMessage(1,"luciano:1041", "jhonson:1041","roulli molly")
 	b,err := UdpMessageToJSON(msg)
 	if(err == nil){
 		fmt.Println(b)
