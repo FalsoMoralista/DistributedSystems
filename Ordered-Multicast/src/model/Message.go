@@ -8,10 +8,10 @@ type Message interface {
 
 //################################################################ UDP ######################################################################
 
-type UdpMessage struct {
-	senderAddr string
-	recipientAddr string
-	attachment interface{}
+type UdpMessage struct {  // TODO Refactor: create message struct
+	senderAddr string `json:"senderAddr,omitempty"`
+	recipientAddr string `json:"recipientAddr,omitempty"`
+	attachment interface{} `json:"attachment"`
 }
 
 func NewUdpMessage(senderAddr string, recipientAddr string, attachment interface{}) *UdpMessage {
