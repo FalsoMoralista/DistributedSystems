@@ -64,7 +64,7 @@ func TestConnection(this *Multicast)(*net.UDPConn, error){
 /**
 *  Send a message through a udp socket
 **/
-func SendUdp(message UdpMessage){
+func SendUdp(message Message){
 	parsedAddr,err := net.ResolveUDPAddr("udp4",message.recipientAddr) // TODO REVIEW ADDRESS
 	checkError(err) // check if there was an error
 	conn,err := net.DialUDP("udp",nil,parsedAddr)

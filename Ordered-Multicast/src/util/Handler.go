@@ -13,3 +13,4 @@ func SendUdp(address string, message model.Message){
 	conn,err := net.DialUDP("udp",nil,parsedAddr)
 	conn.WriteToUDP([]byte(""),parsedAddr)
 }
+}
