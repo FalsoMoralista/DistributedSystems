@@ -2,5 +2,10 @@ package model
 
 
 type Client struct {
-	hostAddr string
+	HostAddr string
 }
+
+func NewClient(hostAddr string) *Client {
+	return &Client{HostAddr: hostAddr}
+}
+

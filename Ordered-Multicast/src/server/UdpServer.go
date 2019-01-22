@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 )
 
-const MAX_GROUPS int = 3
+const (
+	MAX_GROUPS int = 3
+	SERVICE_PORT int = 7879
+	BASE_ADDRESS string = "230.0.0.0"
+	SERVER_ADDR string = "debian:1041"
+)
 
 type UdpServer struct {
 	address string
@@ -25,6 +32,13 @@ func NewUdpServer(address string) *UdpServer{
 	}
 }
 
+func (u *UdpServer) Groups() model.Groups {
+	return u.groups
+}
+
+func (u *UdpServer) SetGroups(groups model.Groups) {
+	u.groups = groups
+}
 
 func (u *UdpServer) UdpAddr() *net.UDPAddr {
 	return u.udpAddr
@@ -48,7 +62,7 @@ func (u *UdpServer) SetAddress(address string) {
 **/
 func (this *UdpServer) Run(){
 	fmt.Println("Server: Starting | Address->"+this.address+" |")
-
+	loadGroups(this)
 	conn, err := net.ListenUDP("udp",this.udpAddr) // starts listening to connections
 	checkError(err)
 	for{
@@ -56,6 +70,21 @@ func (this *UdpServer) Run(){
 		handleClient(conn)
 	}
 }
+
+// Loads the groups that users will use to communicate
+func loadGroups(this *UdpServer){ // TODO review & finish (initialize rooms & add to a map).
+	i := 0
+	//m = this.groups
+	for i <= MAX_GROUPS {
+		name := string("Group "+strconv.Itoa(i))
+		address := string(strings.Replace(BASE_ADDRESS,"0",strconv.Itoa(i),1)+":"+strconv.Itoa(SERVICE_PORT))
+		fmt.Println(name +" "+ address)
+		//m[name]model.NewGroup(name,10,"no owner yet",string())
+		i++
+	}
+	//fmt.Print("...]")
+}
+
 
 /**
 * Handle client connections
@@ -70,17 +99,6 @@ func handleClient(conn *net.UDPConn){
 	checkError(err)
 	fmt.Println("Server: Message content:",string(buf[0:n]))
 	conn.WriteToUDP([]byte("ack"), addr)
-}
-
-
-func loadGroups(this *UdpServer){
-	i := 0
-	m = this.groups
-	for i <= MAX_GROUPS {
-		fmt.Println(i)
-		//m["sala "+i]model.NewGroup() // TODO create groups, insert on table
-		i++
-	}
 }
 
 /**

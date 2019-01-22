@@ -6,12 +6,15 @@ type Message struct {
 	Seq uint  `json:"seq"`// Sequence number
 	SenderAddr string `json:"senderAddr"` // Sender address
 	RecipientAddr string `json:"recipientAddr"`// Recipient address
+	Header string `json:"header,omitempty"` // Header
+	Type string `json:"type,omitempty"` // Type
 	Attachment interface{} `json:"attachment,omitempty"` // Payload
 }
 
-func NewMessage(seq uint, senderAddr string, recipientAddr string, attachment interface{}) *Message {
-	return &Message{Seq: seq, SenderAddr: senderAddr, RecipientAddr: recipientAddr, Attachment: attachment}
+func NewMessage(seq uint, senderAddr string, recipientAddr string, header string, kind string, attachment interface{}) *Message {
+return &Message{Seq: seq, SenderAddr: senderAddr, RecipientAddr: recipientAddr, Header: header, Type: kind, Attachment: attachment}
 }
+
 
 func (this *Message) HasAttachment() bool{
 	return this.Attachment != nil
