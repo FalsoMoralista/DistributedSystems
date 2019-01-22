@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"distributed-systems/Ordered-Multicast/src/model"
 	"distributed-systems/Ordered-Multicast/src/server"
+	"distributed-systems/Ordered-Multicast/src/util"
 	"fmt"
-	"net"
 	"os"
 	"strconv"
 )
@@ -46,23 +46,13 @@ func (this *Application) readKeyboard() (string,error){
 
 func (this *Application) Run()  {
 	this.Before()
-
-	parsedAddr,err := net.ResolveUDPAddr("udp4",this.client.HostAddr) // resolve the udp address
-
 	fmt.Println("Client: Requesting group")
-
-	conn,_:= net.DialUDP("udp",nil,parsedAddr)
-
-	int ,err := conn.Write([]byte("testing communication"))
-
-	if(int == 0){
-		fmt.Println("Error")
+	m := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,nil)
+	n,buffer,err := util.SendUdp(server.SERVER_ADDR,m)
+	if(err != nil){
+		fmt.Println(err)
 	}
-	n,err := conn.Read(this.buffer[0:]) // TODO: Read documentation about read/send functions
-
-	fmt.Println("Client: Message received from server:",string(this.buffer[0:n]))
-	return conn,err
-
+	fmt.Println("Client: Message received from server: "+string(buffer[0:n]))
 }
 
 func main(){

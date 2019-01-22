@@ -3,7 +3,6 @@ package util
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
 	"encoding/json"
-	"fmt"
 	"net"
 )
 
@@ -11,15 +10,17 @@ import (
 const (
 	REQUEST string = "A"
 	POST string = "B"
+	ERROR string = "F"
 
 	GROUP string = "0"
 	USER string = "1"
 
+	BUFFER_SIZE int = 1024
 )
 
 
-func SendUdp(address string, message model.Message) (int, []byte, error){
-	var buffer [1024]byte
+func SendUdp(address string, message *model.Message) (int, []byte, error){
+	buf := make([]byte, BUFFER_SIZE)
 	parsedAddr,err := net.ResolveUDPAddr("udp4",address) // resolve the udp address
 	if(err != nil){
 		return 0,nil,err
@@ -29,10 +30,7 @@ func SendUdp(address string, message model.Message) (int, []byte, error){
 	if(err != nil){
 		return 0,nil,err
 	}
-	n,err := conn.WriteToUDP(parsed,parsedAddr)
-	conn.Read(buffer[0:])
-	if n {
-		
-	}
-	//return n,buffer,err
+	n,err := conn.Write(parsed)
+	conn.Read(buf[0:])
+	return n,buf,err
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
+	"distributed-systems/Ordered-Multicast/src/util"
 	"fmt"
 	"net"
 	"os"
@@ -90,7 +91,7 @@ func loadGroups(this *UdpServer){ // TODO review & finish (initialize rooms & ad
 * Handle client connections
 **/
 func handleClient(conn *net.UDPConn){
-	var buf [512]byte
+	var buf [util.BUFFER_SIZE]byte
 	n, addr, err := conn.ReadFromUDP(buf[0:])
 	if err != nil {
 		fmt.Print("Error, returning...")
@@ -98,8 +99,14 @@ func handleClient(conn *net.UDPConn){
 	}
 	checkError(err)
 	fmt.Println("Server: Message content:",string(buf[0:n]))
+	parse(buf)
 	conn.WriteToUDP([]byte("ack"), addr)
 }
+
+func parse(buf []byte){
+
+}
+
 
 /**
 * Checks whether there was an error
