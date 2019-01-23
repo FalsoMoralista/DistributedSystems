@@ -3,6 +3,7 @@ package server
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
 	"distributed-systems/Ordered-Multicast/src/util"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -12,7 +13,8 @@ import (
 
 const (
 	MAX_GROUPS int = 3
-	SERVICE_PORT int = 7879
+	SERVICE_PORT int = 1041
+	MULTICAST_PORT int = 7879
 	BASE_ADDRESS string = "230.0.0.0"
 	SERVER_ADDR string = "debian:1041"
 )
@@ -21,6 +23,7 @@ type UdpServer struct {
 	address string
 	udpAddr *net.UDPAddr //
 	groups model.Groups // table of groups
+	next_group int
 }
 
 func NewUdpServer(address string) *UdpServer{
@@ -57,54 +60,80 @@ func (u *UdpServer) SetAddress(address string) {
 	u.address = address
 }
 
+//#####################################################################################################################################################################################################################################
 
 /**
 * Starts the server
 **/
 func (this *UdpServer) Run(){
 	fmt.Println("Server: Starting | Address->"+this.address+" |")
-	loadGroups(this)
+	this.loadGroups()
 	conn, err := net.ListenUDP("udp",this.udpAddr) // starts listening to connections
 	checkError(err)
 	for{
 		fmt.Println("Server: Listening...")
-		handleClient(conn)
+		this.handleClient(conn)
 	}
 }
 
-// Loads the groups that users will use to communicate
-func loadGroups(this *UdpServer){ // TODO review & finish (initialize rooms & add to a map).
+// Loads the groups that users will use to communicate and add them to a map
+func (this *UdpServer) loadGroups(){
 	i := 0
 	//m = this.groups
 	for i <= MAX_GROUPS {
-		name := string("Group "+strconv.Itoa(i))
-		address := string(strings.Replace(BASE_ADDRESS,"0",strconv.Itoa(i),1)+":"+strconv.Itoa(SERVICE_PORT))
+		itr := strconv.Itoa(i)
+		name := string("Group "+itr)
+		address := string(strings.Replace(BASE_ADDRESS,"0",itr,1)+":"+strconv.Itoa(MULTICAST_PORT))
+		g := model.NewGroup(strconv.Itoa(i),address)
+		this.groups[itr] = g
 		fmt.Println(name +" "+ address)
-		//m[name]model.NewGroup(name,10,"no owner yet",string())
 		i++
 	}
-	//fmt.Print("...]")
 }
 
 
 /**
 * Handle client connections
 **/
-func handleClient(conn *net.UDPConn){
-	var buf [util.BUFFER_SIZE]byte
+func (this *UdpServer) handleClient(conn *net.UDPConn){ // todo comment
+	buf := make([]byte,util.BUFFER_SIZE)
 	n, addr, err := conn.ReadFromUDP(buf[0:])
 	if err != nil {
 		fmt.Print("Error, returning...")
 		return
 	}
 	checkError(err)
-	fmt.Println("Server: Message content:",string(buf[0:n]))
-	parse(buf)
-	conn.WriteToUDP([]byte("ack"), addr)
+	var msg *model.Message
+	msg,err = this.parse(buf,n)
+	if err != nil{
+		msg = model.NewMessage(0,"",SERVER_ADDR,util.RESPONSE,util.ERROR,nil)
+	}
+	throwback,err := json.Marshal(msg)
+	conn.WriteToUDP(throwback, addr)
 }
 
-func parse(buf []byte){
-
+// Parse client messages
+func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
+	fmt.Println("Server: Message arrived")
+	msg := model.Message{}
+	err := json.Unmarshal(buf[0:to],msg)
+	if(err != nil){ // todo verify " error1 json: Unmarshal(non-pointer model.Message) "
+		return &model.Message{},err
+	}
+	switch msg.Header {
+		case util.REQUEST:
+			switch msg.Type {
+				case util.GROUP:// TODO comment
+					var usr model.Client = msg.Attachment.(model.Client)
+					id := strconv.Itoa(this.next_group)
+					group := this.groups[id]
+					group.Leader = usr
+					group.Clients[usr.HostAddr] = &usr
+					this.next_group = 1 // todo review
+					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil
+			}
+	}
+	return &model.Message{},err
 }
 
 

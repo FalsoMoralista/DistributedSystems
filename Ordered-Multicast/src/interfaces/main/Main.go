@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Application struct {
@@ -19,35 +20,24 @@ func NewApplication() *Application {
 	return &Application{reader:bufio.NewReader(os.Stdin) }
 }
 
-func (this *Application) showMenu(){
-	fmt.Println("| ######## Main menu ######## | ")
-	fmt.Println("| 1 - Retrieve available groups | ")
-	this.reader = bufio.NewReader(os.Stdin)
-	str,_ := this.readKeyboard()
-	var option int64
-	option,_ = strconv.ParseInt(str,10,64)
-	fmt.Println(option)
-	if option == 1{
-		fmt.Println("Retrieving lobbies")
-	}
-}
-
 func (this *Application) Before(){
 	fmt.Println("Please inform your computer hostname:")
 	host, _ := this.readKeyboard()
-	this.client = model.NewClient(host)
-	fmt.Println("Welcome " + host)
+	port := strconv.Itoa(server.SERVICE_PORT)
+	this.client = model.NewClient(host +":"+port)
+	fmt.Println("Welcome!")
 }
 
 func (this *Application) readKeyboard() (string,error){
 	str, err := this.reader.ReadString('\n')
+	strings.Replace(str,"\n","",1) // todo review replace (" \n ")
 	return str,err
 }
 
 func (this *Application) Run()  {
 	this.Before()
-	fmt.Println("Client: Requesting group")
-	m := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,nil)
+	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
+	m := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,this.client)
 	n,buffer,err := util.SendUdp(server.SERVER_ADDR,m)
 	if(err != nil){
 		fmt.Println(err)

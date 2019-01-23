@@ -2,7 +2,7 @@ package model
 
 
 type Client struct {
-	HostAddr string
+	HostAddr string `json:"hostAddr"`
 }
 
 func NewClient(hostAddr string) *Client {
