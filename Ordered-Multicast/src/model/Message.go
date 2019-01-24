@@ -19,14 +19,3 @@ return &Message{Seq: seq, SenderAddr: senderAddr, RecipientAddr: recipientAddr, 
 func (this *Message) HasAttachment() bool{
 	return this.Attachment != nil
 }
-
-//func (m *Message) MarshalJSON() ([]byte, error) { // todo check whether it works if so implement on all other models
-//	return json.Marshal(m)
-//}
-//
-//func (m *Message) UnmarshalJSON(data []byte) error {
-//	if err := json.Unmarshal(data, m); err != nil {
-		//return err
-	//}
-	//return nil
-//}

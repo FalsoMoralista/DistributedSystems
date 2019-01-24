@@ -22,7 +22,9 @@ const (
 	BUFFER_SIZE int = 1024
 )
 
-
+/*
+* TODO documentation & comment
+*/
 func SendUdp(address string, message *model.Message) (int, []byte, error){ // todo review whether this should be here
 	buf := make([]byte, BUFFER_SIZE)
 	parsedAddr,err := net.ResolveUDPAddr("udp4",address) // resolve the udp address

@@ -68,77 +68,74 @@ func (u *UdpServer) SetAddress(address string) {
 func (this *UdpServer) Run(){
 	fmt.Println("Server: Starting | Address->"+this.address+" |")
 	this.loadGroups()
-	conn, err := net.ListenUDP("udp",this.udpAddr) // starts listening to connections
+	conn, err := net.ListenUDP("udp",this.udpAddr) // STARTS LISTENING TO CONNECTIONS
 	checkError(err)
+	fmt.Println("Server: Listening...")
 	for{
-		fmt.Println("Server: Listening...")
 		this.handleClient(conn)
 	}
 }
 
-// Loads the groups that users will use to communicate and add them to a map
+/*
+* Loads the groups that users will use to communicate and add them to a map.
+*/
 func (this *UdpServer) loadGroups(){
 	i := 0
-	//m = this.groups
 	for i <= MAX_GROUPS {
 		itr := strconv.Itoa(i)
 		name := string("Group "+itr)
-		address := string(strings.Replace(BASE_ADDRESS,"0",itr,1)+":"+strconv.Itoa(MULTICAST_PORT))
-		g := model.NewGroup(strconv.Itoa(i),address)
-		this.groups[itr] = g
+		address := string(strings.Replace(BASE_ADDRESS,"0",itr,1)+":"+strconv.Itoa(MULTICAST_PORT)) // PARSE AN ADDRESS
+		g := model.NewGroup(strconv.Itoa(i),address) // INITIALIZE A GROUP
+		this.groups[itr] = g // PUT IT IN THE MAP
 		fmt.Println(name +" "+ address)
 		i++
 	}
 }
 
-
 /**
-* Handle client connections
+* Handle client connections.
 **/
-func (this *UdpServer) handleClient(conn *net.UDPConn){ // todo comment
-	buf := make([]byte,util.BUFFER_SIZE)
-	n, addr, err := conn.ReadFromUDP(buf[0:])
+func (this *UdpServer) handleClient(conn *net.UDPConn){
+	buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
+	n, addr, err := conn.ReadFromUDP(buf[0:]) // READ IT
 	if err != nil {
-		fmt.Print("Error, returning...")
+		fmt.Print("Server: Error, returning...")
 		return
 	}
-	checkError(err)
 	var msg *model.Message
-	msg,err = this.parse(buf,n)
-	if err != nil{
-		msg = model.NewMessage(0,"",SERVER_ADDR,util.RESPONSE,util.ERROR,nil)
-	}
+	msg,err = this.parse(buf,n) // PARSES THE MESSAGE
 	throwback,err := json.Marshal(msg)
-	conn.WriteToUDP(throwback, addr)
+	conn.WriteToUDP(throwback, addr) // RETURN A RESPONSE TO THE CLIENT
 }
 
-// Parse client messages
+/*
+*	Parses client messages from a buffer, returns either a *model.Message or an error.
+*	TODO Implement logs
+*/
 func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
-	fmt.Println("Server: Message arrived")
-	fmt.Println("Server: Message content: "+string(buf))
+	fmt.Print("Server: Message arrived,")
+	fmt.Println(" content: "+string(buf[0:to]))
 	msg := model.Message{}
-	err := json.Unmarshal(buf[0:to],&msg)
-	fmt.Println(err)
-	if(err != nil){
-		return &model.Message{},err
+	err := json.Unmarshal(buf[0:to],&msg) // DECODE THE MESSAGE
+	if(err != nil){ // IN CASE OF ERROR, SEND BACK AN ERROR MESSAGE
+		return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,nil), err
 	}
-	switch msg.Header {
-		case util.REQUEST:
+	switch msg.Header { // VERIFY THE MESSAGE HEADER
+		case util.REQUEST: // IN CASE OF A REQUEST FROM TYPE
 			switch msg.Type {
-				case util.GROUP:// TODO comment
-
-					var usrInfo  = msg.Attachment.(map[string]interface {})
+				case util.GROUP:// GROUP
+					var usrInfo  = msg.Attachment.(map[string]interface {}) // DO THE ATTACHMENT CONVERSION
 					hostAddr := usrInfo["hostAddr"].(string)
-					usr := model.NewClient(hostAddr)
+					usr := model.NewClient(hostAddr) // PARSE THE USER RECEIVED FROM THE MESSAGE
 					id := strconv.Itoa(this.next_group)
-					group := this.groups[id]
-					group.Leader = *usr
-					group.Clients[usr.HostAddr] = usr
+					group := this.groups[id] // GET THE REQUESTED GROUP
+					group.Leader = *usr // MAKE THE USER THE GROUP LEADER
+					group.Clients[usr.HostAddr] = usr // INSERT IN THE MAP
 					this.next_group = 1 // todo review
-					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil
+					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil // RETURNS THE GROUP TO THE USER
 			}
 	}
-	return &model.Message{},err
+	return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,nil), err
 }
 
 

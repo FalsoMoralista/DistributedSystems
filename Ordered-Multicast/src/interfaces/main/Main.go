@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"distributed-systems/Ordered-Multicast/src/controller"
 	"distributed-systems/Ordered-Multicast/src/model"
-	"distributed-systems/Ordered-Multicast/src/server"
 	"distributed-systems/Ordered-Multicast/src/util"
 	"encoding/json"
 	"fmt"
@@ -34,12 +34,10 @@ func (this *Application) readKeyboard() (string,error){
 func (this *Application) Run()  {
 	this.client = model.NewClient(CLIENT_ADDR)
 	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
-	m := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,this.client)
-	n,buffer,err := util.SendUdp(server.SERVER_ADDR,m)
-	if(err != nil){
-		fmt.Println(err)
-	}
-	parse(n,buffer)
+	cntrller := controller.NewController(this.client,this.client.HostAddr)
+	m,_ := cntrller.Request(util.GROUP)
+	group,_ := cntrller.Parse(m)
+	fmt.Println(group.(model.Group).Clients["debian:1041"]) // (testing conversion)
 }
 
 
@@ -54,8 +52,13 @@ func parse(n int, buffer []byte){
 	case util.RESPONSE:
 		switch message.Type {
 			case util.GROUP:
-				fmt.Print("Client: message content -> ")
-				fmt.Println(message.Attachment) // todo try to unmarshal the received maps
+				b, err := json.Marshal(message.Attachment)
+				var g model.Group
+				err = json.Unmarshal(b,&g)
+				fmt.Println(g)
+				if err != nil {
+					fmt.Print(err)
+				}
 		}
 	}
 }
