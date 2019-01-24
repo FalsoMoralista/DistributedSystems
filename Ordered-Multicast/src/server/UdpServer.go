@@ -115,20 +115,24 @@ func (this *UdpServer) handleClient(conn *net.UDPConn){ // todo comment
 // Parse client messages
 func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 	fmt.Println("Server: Message arrived")
+	fmt.Println("Server: Message content: "+string(buf))
 	msg := model.Message{}
-	err := json.Unmarshal(buf[0:to],msg)
-	if(err != nil){ // todo verify " error1 json: Unmarshal(non-pointer model.Message) "
+	err := json.Unmarshal(buf[0:to],&msg)
+	fmt.Println(err)
+	if(err != nil){
 		return &model.Message{},err
 	}
 	switch msg.Header {
 		case util.REQUEST:
 			switch msg.Type {
 				case util.GROUP:// TODO comment
-					var usr model.Client = msg.Attachment.(model.Client)
+					var usrInfo  = msg.Attachment.(map[string]interface {})
+					hostAddr := usrInfo["hostAddr"].(string)
+					usr := model.NewClient(hostAddr)
 					id := strconv.Itoa(this.next_group)
 					group := this.groups[id]
-					group.Leader = usr
-					group.Clients[usr.HostAddr] = &usr
+					group.Leader = *usr
+					group.Clients[usr.HostAddr] = usr
 					this.next_group = 1 // todo review
 					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil
 			}

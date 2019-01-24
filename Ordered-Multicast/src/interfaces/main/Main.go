@@ -7,7 +7,6 @@ import (
 	"distributed-systems/Ordered-Multicast/src/util"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -16,17 +15,14 @@ type Application struct {
 	client *model.Client
 }
 
+const (
+	CLIENT_ADDR string = "debian:1041"
+)
+
 func NewApplication() *Application {
 	return &Application{reader:bufio.NewReader(os.Stdin) }
 }
 
-func (this *Application) Before(){
-	fmt.Println("Please inform your computer hostname:")
-	host, _ := this.readKeyboard()
-	port := strconv.Itoa(server.SERVICE_PORT)
-	this.client = model.NewClient(host +":"+port)
-	fmt.Println("Welcome!")
-}
 
 func (this *Application) readKeyboard() (string,error){
 	str, err := this.reader.ReadString('\n')
@@ -35,7 +31,7 @@ func (this *Application) readKeyboard() (string,error){
 }
 
 func (this *Application) Run()  {
-	this.Before()
+	this.client = model.NewClient(CLIENT_ADDR)
 	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
 	m := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,this.client)
 	n,buffer,err := util.SendUdp(server.SERVER_ADDR,m)
