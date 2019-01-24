@@ -126,6 +126,7 @@ func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 		case util.REQUEST:
 			switch msg.Type {
 				case util.GROUP:// TODO comment
+
 					var usrInfo  = msg.Attachment.(map[string]interface {})
 					hostAddr := usrInfo["hostAddr"].(string)
 					usr := model.NewClient(hostAddr)

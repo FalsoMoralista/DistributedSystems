@@ -5,6 +5,7 @@ import (
 	"distributed-systems/Ordered-Multicast/src/model"
 	"distributed-systems/Ordered-Multicast/src/server"
 	"distributed-systems/Ordered-Multicast/src/util"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -26,7 +27,7 @@ func NewApplication() *Application {
 
 func (this *Application) readKeyboard() (string,error){
 	str, err := this.reader.ReadString('\n')
-	strings.Replace(str,"\n","",1) // todo review replace (" \n ")
+	strings.Replace(str,"\n","",-1) // todo review replace (" \n ")
 	return str,err
 }
 
@@ -38,7 +39,25 @@ func (this *Application) Run()  {
 	if(err != nil){
 		fmt.Println(err)
 	}
-	fmt.Println("Client: Message received from server: "+string(buffer[0:n]))
+	parse(n,buffer)
+}
+
+
+func parse(n int, buffer []byte){
+	fmt.Println("Client: Message received from server")
+	message := model.Message{}
+	err := json.Unmarshal(buffer[0:n],&message)
+	if err != nil {
+		return
+	}
+	switch message.Header {
+	case util.RESPONSE:
+		switch message.Type {
+			case util.GROUP:
+				fmt.Print("Client: message content -> ")
+				fmt.Println(message.Attachment) // todo try to unmarshal the received maps
+		}
+	}
 }
 
 func main(){

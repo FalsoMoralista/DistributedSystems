@@ -12,7 +12,7 @@ const (
 	REQUEST string = "A"
 	POST string = "B"
 	DELETE string = "C"
-	ACK string = "D"
+	OK string = "D"
 	RESPONSE string = "E"
 	ERROR string = "F"
 	// Types
@@ -30,11 +30,15 @@ func SendUdp(address string, message *model.Message) (int, []byte, error){ // to
 		return 0,nil,err
 	}
 	conn,err := net.DialUDP("udp",nil,parsedAddr)
-	parsed,err := json.Marshal(message)
+	parsed,err := encode(message)
 	if(err != nil){
 		return 0,nil,err
 	}
 	conn.Write(parsed)
 	x,err := conn.Read(buf[0:])
 	return x,buf,err
+}
+
+func encode(message *model.Message)([]byte, error){ // todo review possibility of using " json.NewEncoder "
+	return json.Marshal(message) // basic way
 }
