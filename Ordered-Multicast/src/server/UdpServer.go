@@ -129,9 +129,12 @@ func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 					usr := model.NewClient(hostAddr) // PARSE THE USER RECEIVED FROM THE MESSAGE
 					id := strconv.Itoa(this.next_group)
 					group := this.groups[id] // GET THE REQUESTED GROUP
-					group.Leader = *usr // MAKE THE USER THE GROUP LEADER
+					if(group.Leader.HostAddr == ""){
+						group.Leader = *usr // MAKE THE USER THE GROUP LEADER
+					}
 					group.Clients[usr.HostAddr] = usr // INSERT IN THE MAP
-					this.next_group = 1 // todo review
+					//this.next_group += 1 // todo review (next user will be conected to the next available group with this line)
+					fmt.Println("Server: Client group request received, retrieving...")
 					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil // RETURNS THE GROUP TO THE USER
 			}
 	}
