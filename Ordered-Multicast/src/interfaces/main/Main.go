@@ -36,7 +36,7 @@ func (this *Application) readKeyboard() (string,error){
 func (this *Application) Run()  { // TODO TEST
 	this.client = model.NewClient(CLIENT_ADDR)
 	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
-	cntrller := controller.NewController(this.client,this.client.HostAddr)
+	cntrller := controller.NewController(this.client)
 	m,_ := cntrller.Request(util.GROUP)
 
 	var group model.Group
@@ -45,41 +45,27 @@ func (this *Application) Run()  { // TODO TEST
 
 	//##################################################################################################################
 	addr,err := net.ResolveUDPAddr("udp4",group.Address)
-	if err != nil {
-		fmt.Println("erro:" ,err)
-	}
+	checkError(err)
+	cntrller.AssignGroupAddress(addr)
 	iface , err := net.InterfaceByName("lo")
-	if err != nil {
-		fmt.Println("erro:" ,err)
-	}
+	checkError(err)
 	conn, err := net.ListenMulticastUDP("udp4", iface , addr) // MULTICAST SOCKET
-	if err != nil {
-		fmt.Println("erro:" ,err)
-	}
+	checkError(err)
 
 	fmt.Println("conn: ",conn.RemoteAddr())
 	fmt.Println("Waiting multicast messages...")
 	int,err := conn.WriteToUDP([]byte("hello world"),addr)
 	for {
-
 		buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
 		fmt.Println(int)
-		if(err != nil){
-			fmt.Println(err)
-		}
+		checkError(err)
 		n, addr, err := conn.ReadFromUDP(buf[0:]) // READ IT
 		fmt.Println("Message received from "+addr.String())
 		fmt.Println("message: "+string(buf[0:n]))
-		if err != nil {
-			fmt.Print("Server: Error, returning...")
-			return
-		}
-
+		checkError(err)
 	}
 
-
 }
-
 
 func parse(n int, buffer []byte){
 	fmt.Println("Client: Message received from server")
@@ -91,14 +77,14 @@ func parse(n int, buffer []byte){
 	switch message.Header {
 	case util.RESPONSE:
 		switch message.Type {
-			case util.GROUP:
-				b, err := json.Marshal(message.Attachment)
-				var g model.Group
-				err = json.Unmarshal(b,&g)
-				fmt.Println(g)
-				if err != nil {
-					fmt.Print(err)
-				}
+		case util.GROUP:
+			b, err := json.Marshal(message.Attachment)
+			var g model.Group
+			err = json.Unmarshal(b,&g)
+			fmt.Println(g)
+			if err != nil {
+				fmt.Print(err)
+			}
 		}
 	}
 }
@@ -109,4 +95,14 @@ func main(){
 	time.Sleep(time.Second * 3)
 	app2 := NewApplication()
 	app2.Run()
+}
+
+/**
+* Checks whether there was an error
+**/
+func checkError(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
+		os.Exit(1)
+	}
 }

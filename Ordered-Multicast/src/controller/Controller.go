@@ -2,45 +2,48 @@ package controller
 
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
+	"distributed-systems/Ordered-Multicast/src/model/multicast"
 	"distributed-systems/Ordered-Multicast/src/server"
 	"distributed-systems/Ordered-Multicast/src/util"
 	"encoding/json"
+	"net"
 )
 
 const (
 	CLIENT_ADDR string = "debian:1041"
+	SERVER_ADDRESS string = "debian:1041"
 )
 
 type Controller struct {
-	client *model.Client
-	client_address string
-	server_address string
+	peer *model.Peer
 }
 
-func NewController(client *model.Client, client_address string) *Controller {
-	return &Controller{client: client, client_address: client_address}
+
+func NewController(client *model.Client) *Controller {
+	m := multicast.NewMulticastListener(nil)
+	p := model.NewPeer(client,m)
+	return &Controller{peer:p}
 }
 
-func (c *Controller) Client_address() string {
-	return c.client_address
+func (c *Controller) Peer() *model.Peer {
+	return c.peer
 }
 
-func (c *Controller) SetClient_address(client_address string) {
-	c.client_address = client_address
+func (c *Controller) SetPeer(peer *model.Peer) {
+	c.peer = peer
 }
 
-func (c *Controller) Client() *model.Client {
-	return c.client
+func (this *Controller) AssignGroupAddress(addr *net.UDPAddr){
+	this.peer.Listener().AssignGroupAddress(addr)
 }
 
-func (c *Controller) SetClient(client *model.Client) {
-	c.client = client
+func (this *Controller) ConnectToGroup(iface string) error{
+	return this.Peer().Listener().Connect(iface)
 }
 
 // *************************************************************************************************************************************************************************************************************
 // *************************************************************************************************************************************************************************************************************
 // *************************************************************************************************************************************************************************************************************
-
 
 /*
 * Do a request based on its type and return back a response message or an error.
@@ -48,7 +51,7 @@ func (c *Controller) SetClient(client *model.Client) {
 func (this *Controller) Request(TYPE string) (*model.Message, error){
 	switch TYPE {
 		case util.GROUP:
-			request := model.NewMessage(0,this.client.HostAddr,server.SERVER_ADDR,util.REQUEST,util.GROUP,this.client)
+			request := model.NewMessage(0,this.peer.Client().HostAddr,SERVER_ADDRESS,util.REQUEST,util.GROUP,this.peer.Client().HostAddr)
 			response := model.Message{}
 			n,buffer,err := util.SendUdp(server.SERVER_ADDR,request)
 			if checkError(err){
@@ -80,7 +83,6 @@ func (this *Controller) Parse(message *model.Message) (interface{},error){
 	}
 	return nil, nil
 }
-
 
 func checkError(err error)  bool{
 	if(err != nil){
