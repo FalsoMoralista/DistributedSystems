@@ -1,6 +1,5 @@
 package model
 
-
 type Client struct {
 	HostAddr string `json:"hostAddr"`
 }

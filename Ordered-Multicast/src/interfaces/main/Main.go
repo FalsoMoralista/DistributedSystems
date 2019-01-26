@@ -38,28 +38,31 @@ func (this *Application) Run()  { // TODO TEST
 	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
 	cntrller := controller.NewController(this.client,this.client.HostAddr)
 	m,_ := cntrller.Request(util.GROUP)
+
 	var group model.Group
 	parsed,_ := cntrller.Parse(m)
 	group = parsed.(model.Group)
-	//###############################
-	addr,err := net.ResolveUDPAddr("udp",group.Address)
+
+	//##################################################################################################################
+	addr,err := net.ResolveUDPAddr("udp4",group.Address)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("erro:" ,err)
 	}
-	conn, err := net.ListenMulticastUDP("udp", nil, addr) // MULTICAST SOCKET
+	iface , err := net.InterfaceByName("lo")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("erro:" ,err)
 	}
-	conn, err = net.DialUDP("udp",nil,addr)
+	conn, err := net.ListenMulticastUDP("udp4", iface , addr) // MULTICAST SOCKET
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("erro:" ,err)
 	}
-	fmt.Println(conn.RemoteAddr())
+
+	fmt.Println("conn: ",conn.RemoteAddr())
 	fmt.Println("Waiting multicast messages...")
+	int,err := conn.WriteToUDP([]byte("hello world"),addr)
 	for {
 
 		buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
-		int,err := conn.WriteToUDP([]byte("hello world"),addr)
 		fmt.Println(int)
 		if(err != nil){
 			fmt.Println(err)
