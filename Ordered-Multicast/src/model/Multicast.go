@@ -1,78 +1,67 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 )
 
-type Multicast struct {
-	serverAddr *net.UDPAddr // TODO remove from here, create a Message struct with sender and recipient addresses
-	buffer [1024]byte
+const (
+	BUFFER_SIZE int = 1024
+)
+
+type MulticastListener struct {
+	socket *net.UDPConn
+	GROUP_ADDRESS *net.UDPAddr
+	fifo_protocol *FifoOrder `json:"fifo_protocol,omitempty"`
 }
 
+func NewMulticastListener(GROUP_ADDRESS *net.UDPAddr) *MulticastListener {
+	return &MulticastListener{GROUP_ADDRESS: GROUP_ADDRESS}
+}
 /**
-* Returns a new *Multicast (work as a constructor)
-*
+* Listens for multicast messages from the current assigned group.
 **/
-func NewMulticast(address string) * Multicast{
-	parsedAddr,err := net.ResolveUDPAddr("udp4",address) // resolve the udp address
-	checkError(err) // check if there was an error
-
-	return &Multicast{ // otherwise return a pointer to a Multicast
-		serverAddr:parsedAddr,
+func (this *MulticastListener) Listen() {
+	for {
+		buffer := make([]byte, BUFFER_SIZE)
+		n, received_addr, err := this.socket.ReadFromUDP(buffer[0:])
+		fmt.Println("Message received from " + received_addr.String())
+		fmt.Println("message: " + string(buffer[0:n]))
+		if err != nil {
+			fmt.Print("Server: Error, returning...") // todo replace
+		}
 	}
 }
 
 /**
-* Returns the udp address for a Multicast instance
-*
+*	Multicast a message through the assigned group.
 **/
-func GetServerAddr(this *Multicast) *net.UDPAddr{
-	return this.serverAddr
+func (this *MulticastListener) Multicast(listener *MulticastListener, message *Message) error{
+	bArray,err := json.Marshal(message)
+	_,err = listener.socket.WriteToUDP(bArray,listener.GROUP_ADDRESS)
+	if(err != nil){
+		return err
+	}
+	return nil
 }
 
 /**
-* Checks whether there was an error
+*	Assigns an address to this group.
 **/
-func checkError(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
-		os.Exit(1)
-	}
+func(this *MulticastListener) AssignGroupAddress(addr *net.UDPAddr){
+	this.GROUP_ADDRESS = addr
 }
 
 /**
-*  Tests the connection with a server
+*	Connects to the group given an interface.
 **/
-func TestConnection(this *Multicast)(*net.UDPConn, error){
-	fmt.Println("Client: Testing connection")
-	conn,err := net.DialUDP("udp",nil,this.serverAddr)
-	checkError(err)
-	int ,err := conn.Write([]byte("testing communication"))
-	if(int == 0){
-		fmt.Println("Error")
+func (this *MulticastListener) Connect(iface string) error{
+	inf , err := net.InterfaceByName(iface)
+	var conn *net.UDPConn
+	if err != nil{
+		conn, err = net.ListenMulticastUDP("udp4", inf , this.GROUP_ADDRESS) // MULTICAST SOCKET
+		this.socket = conn
 	}
-	checkError(err)
-	n,err := conn.Read(this.buffer[0:]) // TODO: Read documentation about read/send functions
-	checkError(err)
-	fmt.Println("Client: Message received from server:",string(this.buffer[0:n]))
-	return conn,err
-}
-
-// TODO Create a file to define the protocol messages (as enums)
-/**
-*  Send a message through a udp socket
-**/
-func SendUdp(message Message){
-	parsedAddr,err := net.ResolveUDPAddr("udp4",message.RecipientAddr) // TODO REVIEW ADDRESS
-	checkError(err) // check if there was an error
-	conn,err := net.DialUDP("udp",nil,parsedAddr)
-	checkError(err)
-	int ,err := conn.Write([]byte("MESSAGE")) // TODO: Verify how to convert from generic type into byte array
-	if(int == 0){
-		fmt.Println("Error")
-	}
-	checkError(err)
-	//net.ListenMulticastUDP()
+	return err
 }

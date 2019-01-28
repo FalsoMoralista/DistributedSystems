@@ -15,7 +15,6 @@ import (
 
 type Application struct {
 	reader *bufio.Reader
-	client *model.Client
 }
 
 const (
@@ -33,10 +32,9 @@ func (this *Application) readKeyboard() (string,error){
 	return str,err
 }
 
-func (this *Application) Run()  { // TODO TEST
-	this.client = model.NewClient(CLIENT_ADDR)
-	fmt.Println("Client: "+this.client.HostAddr+" Requesting group")
-	cntrller := controller.NewController(this.client)
+func (this *Application) Run()  {
+	fmt.Println("Client: "+CLIENT_ADDR+" Requesting group")
+	cntrller := controller.NewController(CLIENT_ADDR)
 	m,_ := cntrller.Request(util.GROUP)
 
 	var group model.Group
@@ -52,12 +50,10 @@ func (this *Application) Run()  { // TODO TEST
 	conn, err := net.ListenMulticastUDP("udp4", iface , addr) // MULTICAST SOCKET
 	checkError(err)
 
-	fmt.Println("conn: ",conn.RemoteAddr())
 	fmt.Println("Waiting multicast messages...")
-	int,err := conn.WriteToUDP([]byte("hello world"),addr)
+	_,err = conn.WriteToUDP([]byte("hello world"),addr)
 	for {
 		buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
-		fmt.Println(int)
 		checkError(err)
 		n, addr, err := conn.ReadFromUDP(buf[0:]) // READ IT
 		fmt.Println("Message received from "+addr.String())

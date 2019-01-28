@@ -2,7 +2,6 @@ package controller
 
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
-	"distributed-systems/Ordered-Multicast/src/model/multicast"
 	"distributed-systems/Ordered-Multicast/src/server"
 	"distributed-systems/Ordered-Multicast/src/util"
 	"encoding/json"
@@ -19,9 +18,9 @@ type Controller struct {
 }
 
 
-func NewController(client *model.Client) *Controller {
-	m := multicast.NewMulticastListener(nil)
-	p := model.NewPeer(client,m)
+func NewController(client_address string) *Controller {
+	m :=  model.NewMulticastListener(nil)
+	p := model.NewPeer(client_address,m)
 	return &Controller{peer:p}
 }
 
@@ -51,7 +50,7 @@ func (this *Controller) ConnectToGroup(iface string) error{
 func (this *Controller) Request(TYPE string) (*model.Message, error){
 	switch TYPE {
 		case util.GROUP:
-			request := model.NewMessage(0,this.peer.Client().HostAddr,SERVER_ADDRESS,util.REQUEST,util.GROUP,this.peer.Client().HostAddr)
+			request := model.NewMessage(0,this.peer.HostAddr,SERVER_ADDRESS,util.REQUEST,util.GROUP,this.peer) // this.peer marshaling error breaks the application
 			response := model.Message{}
 			n,buffer,err := util.SendUdp(server.SERVER_ADDR,request)
 			if checkError(err){

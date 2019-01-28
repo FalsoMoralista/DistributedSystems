@@ -14,6 +14,7 @@ import (
 const (
 	MAX_GROUPS int = 3
 	SERVICE_PORT int = 1041
+	BUFFER_SIZE int = 4096
 	MULTICAST_PORT int = 7879
 	BASE_ADDRESS string = "230.0.0.0"
 	SERVER_ADDR string = "debian:1041"
@@ -96,7 +97,7 @@ func (this *UdpServer) loadGroups(){
 * Handle client connections.
 **/
 func (this *UdpServer) handleClient(conn *net.UDPConn){
-	buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
+	buf := make([]byte,BUFFER_SIZE) // INITIALIZE THE BUFFER
 	n, addr, err := conn.ReadFromUDP(buf[0:]) // READ IT
 	if err != nil {
 		fmt.Print("Server: Error, returning...")
@@ -118,7 +119,7 @@ func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 	msg := model.Message{}
 	err := json.Unmarshal(buf[0:to],&msg) // DECODE THE MESSAGE
 	if(err != nil){ // IN CASE OF ERROR, SEND BACK AN ERROR MESSAGE
-		return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,nil), err
+		return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,err), err
 	}
 	switch msg.Header { // VERIFY THE MESSAGE HEADER
 		case util.REQUEST: // IN CASE OF A REQUEST FROM TYPE
@@ -126,19 +127,22 @@ func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 				case util.GROUP:// GROUP
 					var usrInfo  = msg.Attachment.(map[string]interface {}) // DO THE ATTACHMENT CONVERSION
 					hostAddr := usrInfo["hostAddr"].(string)
-					usr := model.NewClient(hostAddr) // PARSE THE USER RECEIVED FROM THE MESSAGE
+					mListener := model.NewMulticastListener()
+					peer := model.NewPeer(hostAddr,nil) // PARSE THE USER RECEIVED FROM THE MESSAGE
 					id := strconv.Itoa(this.next_group)
 					group := this.groups[id] // GET THE REQUESTED GROUP
-					if(group.Leader.HostAddr == ""){
-						group.Leader = *usr // MAKE THE USER THE GROUP LEADER
+					if len(group.Peers) < 4{ // DEFINES A LIMIT TO THE GROUP SIZE
+						if(group.Leader.HostAddr == "" && len(group.Peers) == 0){
+							group.Leader = *peer // MAKE THE USER THE GROUP LEADER
+						}
+						group.Peers[peer.HostAddr] = peer // INSERT IN THE MAP // todo fix
+						//this.next_group += 1 // todo review (next user will be conected to the next available group with this line)
+						fmt.Println("Server: Client group request received, retrieving...")
+						return model.NewMessage(0,peer.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil // RETURNS THE GROUP TO THE USER
 					}
-					group.Clients[usr.HostAddr] = usr // INSERT IN THE MAP
-					//this.next_group += 1 // todo review (next user will be conected to the next available group with this line)
-					fmt.Println("Server: Client group request received, retrieving...")
-					return model.NewMessage(0,usr.HostAddr,SERVER_ADDR,util.RESPONSE,util.GROUP,group), nil // RETURNS THE GROUP TO THE USER
 			}
 	}
-	return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,nil), err
+	return model.NewMessage(0,"", SERVER_ADDR, util.ERROR, util.RESPONSE,err), err
 }
 
 

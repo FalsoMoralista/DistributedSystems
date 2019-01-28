@@ -19,7 +19,7 @@ const (
 	GROUP string = "0"
 	USER string = "1"
 	// Settings
-	BUFFER_SIZE int = 1024
+	BUFFER_SIZE int = 4096
 )
 
 /*

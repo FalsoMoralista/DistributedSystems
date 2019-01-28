@@ -2,13 +2,13 @@ package model
 
 
 type Group struct {
-	ID string 	`json:"id"`		// group name
+	ID string 	`json:"id"` // group name
 	Address  string 	`json:"address"` // group address
-	Clients Clients		`json:"clients"`		// peers connected
-	Leader Client 	`json:"leader"` // group leader
+	Peers Peers `json:"peers"` // peers connected
+	Leader Peer 	`json:"leader"` // group leader
 }
 
-func NewGroup(id string, address string) *Group {
-	return &Group{ID: id, Clients: make(Clients), Address: address}
+func NewGroup(groupID string, groupAddress string) *Group {
+	return &Group{ID: groupID, Peers : make(Peers), Address: groupAddress}
 }
 
