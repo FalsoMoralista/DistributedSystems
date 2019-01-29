@@ -2,14 +2,12 @@ package controller
 
 import (
 	"distributed-systems/Ordered-Multicast/src/model"
-	"distributed-systems/Ordered-Multicast/src/server"
 	"distributed-systems/Ordered-Multicast/src/util"
 	"encoding/json"
 	"net"
 )
 
 const (
-	CLIENT_ADDR string = "debian:1041"
 	SERVER_ADDRESS string = "debian:1041"
 )
 
@@ -19,8 +17,7 @@ type Controller struct {
 
 
 func NewController(client_address string) *Controller {
-	m :=  model.NewMulticastListener(nil)
-	p := model.NewPeer(client_address,m)
+	p := model.NewPeer(client_address,nil)
 	return &Controller{peer:p}
 }
 
@@ -33,26 +30,23 @@ func (c *Controller) SetPeer(peer *model.Peer) {
 }
 
 func (this *Controller) AssignGroupAddress(addr *net.UDPAddr){
-	this.peer.Listener().AssignGroupAddress(addr)
+	this.peer.Listener.AssignGroupAddress(addr)
 }
 
 func (this *Controller) ConnectToGroup(iface string) error{
-	return this.Peer().Listener().Connect(iface)
+	return this.peer.Listener.Connect(iface)
 }
 
-// *************************************************************************************************************************************************************************************************************
-// *************************************************************************************************************************************************************************************************************
-// *************************************************************************************************************************************************************************************************************
-
+/*********************************************************************************************************************************************************************************************/
 /*
 * Do a request based on its type and return back a response message or an error.
 */
 func (this *Controller) Request(TYPE string) (*model.Message, error){
 	switch TYPE {
 		case util.GROUP:
-			request := model.NewMessage(0,this.peer.HostAddr,SERVER_ADDRESS,util.REQUEST,util.GROUP,this.peer) // this.peer marshaling error breaks the application
+			request := model.NewMessage(0,this.peer.HostAddr,SERVER_ADDRESS,util.REQUEST,util.GROUP,nil)
 			response := model.Message{}
-			n,buffer,err := util.SendUdp(server.SERVER_ADDR,request)
+			n,buffer,err := util.SendUdp(SERVER_ADDRESS,request)
 			if checkError(err){
 				return nil,err
 			}

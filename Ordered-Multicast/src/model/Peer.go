@@ -2,18 +2,12 @@ package model
 
 
 type Peer struct {
-	HostAddr string `json:"hostAddr"`
-	listener *MulticastListener `json:"listener,omitempty"`
+	HostAddr string `json:"HostAddr"`
+	Listener *MulticastListener `json:"listener"`
 }
 
 func NewPeer(hostAddr string, listener *MulticastListener) *Peer {
-	return &Peer{HostAddr:hostAddr, listener: listener}
+	return &Peer{HostAddr:hostAddr, Listener: listener}
 }
 
-func (p *Peer) Listener() *MulticastListener {
-	return p.listener
-}
 
-func (p *Peer) SetListener(listener *MulticastListener) {
-	p.listener = listener
-}
