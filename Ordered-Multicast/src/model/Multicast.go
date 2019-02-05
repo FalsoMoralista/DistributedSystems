@@ -16,6 +16,7 @@ type MulticastListener struct {
 	Socket *net.UDPConn `json:"socket,omitempty"`
  	GROUP_ADDRESS *net.UDPAddr `json:"group_address,omitempty"`
 	Fifo_protocol *FifoOrder `json:"fifo_protocol"`
+	connected bool
 }
 
 /**
@@ -26,36 +27,7 @@ func NewMulticastListener(process_id int,GROUP_ADDRESS *net.UDPAddr) *MulticastL
 	iface , _ := net.InterfaceByName("lo")
 	sock, err := net.ListenMulticastUDP("udp4", iface,GROUP_ADDRESS)
 	checkError(err)
-	return &MulticastListener{Socket:sock, GROUP_ADDRESS: GROUP_ADDRESS, Fifo_protocol:NewFifoOrder(process_id)}  // todo fix (fifo_protocol:NewFifoOrder(-1))
-}
-
-
-/***************************************************************************************************************************************************************************************************/
-/**
-* Listens for multicast messages from the current assigned group.
-**/
-func (this *MulticastListener) Listen() {
-	for {
-		buffer := make([]byte, BUFFER_SIZE)
-		n, received_addr, err := this.Socket.ReadFromUDP(buffer[0:])
-		fmt.Println("Message received from " + received_addr.String())
-		fmt.Println("message: " + string(buffer[0:n]))
-		if err != nil {
-			fmt.Print("Server: Error, returning...") // todo replace
-		}
-	}
-}
-
-/**
-*	Multicast a message through the assigned group.
-**/
-func (this *MulticastListener) Multicast(message *Message) error{
-	bArray,err := json.Marshal(message)
-	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
-	if(err != nil){
-		return err
-	}
-	return nil
+	return &MulticastListener{Socket:sock, GROUP_ADDRESS: GROUP_ADDRESS, Fifo_protocol:NewFifoOrder(process_id)}
 }
 
 /**
@@ -71,11 +43,69 @@ func(this *MulticastListener) AssignGroupAddress(addr *net.UDPAddr){
 func (this *MulticastListener) Connect(iface string) error{
 	inf , err := net.InterfaceByName(iface)
 	var conn *net.UDPConn
-	if err != nil{
+	if err == nil{
 		conn, err = net.ListenMulticastUDP("udp4", inf , this.GROUP_ADDRESS) // MULTICAST SOCKET
 		this.Socket = conn
+		this.connected = true
 	}
 	return err
+}
+/**
+* Returns whether this peer is connected.
+**/
+func (this *MulticastListener) isConnected() bool{
+	return this.connected
+}
+/***************************************************************************************************************************************************************************************************/
+/**
+*	Multicast a message through the assigned group.
+**/
+func (this *MulticastListener) Multicast(obj interface{}) error{
+	var msg *Message = this.Fifo_protocol.Send(obj) // STEP THROUGH THE FIFO PROTOCOL
+	bArray,err := json.Marshal(msg)
+	fmt.Println("Peer: sending message",msg)
+	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
+	return err
+}
+/**
+* Listens for multicast messages from the current assigned group.
+**/
+func (this *MulticastListener) Listen() {
+	if this.isConnected(){
+		for {
+			handle(this)
+		}
+	}
+	fmt.Println("Error: peer not connected")
+}
+
+/**
+* Handles received messages.
+**/
+func handle(this *MulticastListener){
+	buffer := make([]byte, BUFFER_SIZE)
+	n, received_addr, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
+	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
+	protocol(msg,this) // PROTOCOL
+	fmt.Println("message:",msg)
+	fmt.Println("Message received from " + received_addr.String())
+	if err != nil {
+		fmt.Print("Peer: Error, returning...")
+		return
+	}
+}
+
+/**
+* Decodes received messages.
+**/
+func decode(n int, buff []byte) (*Message, error){
+	var m *Message
+	err :=json.Unmarshal(buff[0:n],m)
+	return m,err
+}
+
+func protocol(msg *Message, m *MulticastListener){
+	m.Fifo_protocol.Receive(msg)
 }
 
 /**

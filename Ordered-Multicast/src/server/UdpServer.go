@@ -62,7 +62,6 @@ func (u *UdpServer) SetAddress(address string) {
 }
 
 //#####################################################################################################################################################################################################################################
-
 /**
 * Starts the server
 **/
@@ -134,8 +133,6 @@ func(this *UdpServer) parse(buf []byte , to int) (*model.Message, error){
 							group.Leader = *peer // MAKE THE PEER THE GROUP LEADER
 						}
 						group.Peers[peer.HostAddr] = peer // THEN REGISTER THE PEER IN THE GROUP
-						bytes, _ := json.Marshal(group.Peers[peer.HostAddr].Listener.Fifo_protocol)
-						fmt.Println(string(bytes))
 						//this.next_group += 1 // todo review (next user will be conected to the next available group with this line)
 						fmt.Println("Server: Client group request received, retrieving...")
 						return model.NewMessage(0, SERVER_ADDR, peer.HostAddr, util.RESPONSE, util.GROUP, *group), nil // RETURNS THE GROUP TO THE USER

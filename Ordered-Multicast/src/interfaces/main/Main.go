@@ -33,11 +33,13 @@ func (this *Application) Run()  {
 	var group model.Group
 	parsed,_ := cntrller.Parse(m)
 	group = parsed.(model.Group)
+	peer := group.Peers[this.CLIENT_ADDR]
 	// todo set back controller peer (received from group)
-	fmt.Println("Group:", group.Peers[this.CLIENT_ADDR])
-	//peer := group.Peers[this.CLIENT_ADDR]
-	//peer.Listener.Multicast(model.NewMessage(0,"eu","voce","empty","empty",nil))
-	//peer.Listener.Listen()
+	cntrller.SetPeer(peer)
+	cntrller.ConnectPeer("lo")
+	go cntrller.Peer().Listener.Listen()
+	time.Sleep(time.Second*3)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(0,"eu","voce","e o zubumafoo","",nil))
 
 	//##################################################################################################################
 	//addr,err := net.ResolveUDPAddr("udp4",group.Address)

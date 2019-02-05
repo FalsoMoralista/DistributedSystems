@@ -33,7 +33,7 @@ func (this *Controller) AssignGroupAddress(addr *net.UDPAddr){
 	this.peer.Listener.AssignGroupAddress(addr)
 }
 
-func (this *Controller) ConnectToGroup(iface string) error{
+func (this *Controller) ConnectPeer(iface string) error{
 	return this.peer.Listener.Connect(iface)
 }
 
