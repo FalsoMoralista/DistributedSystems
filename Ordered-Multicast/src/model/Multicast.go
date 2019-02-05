@@ -63,10 +63,12 @@ func (this *MulticastListener) isConnected() bool{
 func (this *MulticastListener) Multicast(obj interface{}) error{
 	var msg *Message = this.Fifo_protocol.Send(obj) // STEP THROUGH THE FIFO PROTOCOL
 	bArray,err := json.Marshal(msg)
+
 	fmt.Println("Peer: sending message",msg)
 	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
 	return err
 }
+
 /**
 * Listens for multicast messages from the current assigned group.
 **/
@@ -84,13 +86,12 @@ func (this *MulticastListener) Listen() {
 **/
 func handle(this *MulticastListener){
 	buffer := make([]byte, BUFFER_SIZE)
-	n, received_addr, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
+	n, _, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	protocol(msg,this) // PROTOCOL
 	fmt.Println("message:",msg)
-	fmt.Println("Message received from " + received_addr.String())
 	if err != nil {
-		fmt.Print("Peer: Error, returning...")
+		fmt.Println("Peer: Error, returning...")
 		return
 	}
 }
@@ -99,13 +100,14 @@ func handle(this *MulticastListener){
 * Decodes received messages.
 **/
 func decode(n int, buff []byte) (*Message, error){
-	var m *Message
-	err :=json.Unmarshal(buff[0:n],m)
-	return m,err
+	var m = Message{}
+	err :=json.Unmarshal(buff[0:n],&m)
+	return &m,err
 }
 
 func protocol(msg *Message, m *MulticastListener){
-	m.Fifo_protocol.Receive(msg)
+	var deliver bool = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
+	fmt.Println("Can the message",msg.Seq,"from "+msg.SenderAddr+" be delivered to the Appplication? ->",deliver)
 }
 
 /**

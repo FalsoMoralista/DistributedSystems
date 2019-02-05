@@ -4,7 +4,6 @@ import (
 	"distributed-systems/Ordered-Multicast/src/controller"
 	"distributed-systems/Ordered-Multicast/src/model"
 	"distributed-systems/Ordered-Multicast/src/util"
-	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -25,64 +24,20 @@ func NewApplication(CLIENT_ADDR string) *Application {
 
 
 func (this *Application) Run()  {
-	// TODO COMPARE CONTROLLER'S PEER AND PEER RECEIVED FROM THE GROUP
 	fmt.Println("Client: "+this.CLIENT_ADDR+" Requesting group")
 	cntrller := controller.NewController(this.CLIENT_ADDR)
-	m,_ := cntrller.Request(util.GROUP)
+	m,_ := cntrller.Request(util.GROUP) // REQUEST A GROUP
 
 	var group model.Group
 	parsed,_ := cntrller.Parse(m)
-	group = parsed.(model.Group)
-	peer := group.Peers[this.CLIENT_ADDR]
-	// todo set back controller peer (received from group)
-	cntrller.SetPeer(peer)
-	cntrller.ConnectPeer("lo")
-	go cntrller.Peer().Listener.Listen()
-	time.Sleep(time.Second*3)
+	group = parsed.(model.Group) // GET THE REQUEST AND CONVERT
+
+	peer := group.Peers[this.CLIENT_ADDR] // GET A PEER
+	cntrller.SetPeer(peer) // REPLACE THE OLD ONE IN THE CONTROLLER
+	cntrller.ConnectPeer("lo")  // CONNECT HIM
+	go cntrller.Peer().Listener.Listen() // START LISTENING TO CONNECTIONS
+	time.Sleep(time.Second*4)
 	cntrller.Peer().Listener.Multicast(model.NewMessage(0,"eu","voce","e o zubumafoo","",nil))
-
-	//##################################################################################################################
-	//addr,err := net.ResolveUDPAddr("udp4",group.Address)
-	//checkError(err)
-	//cntrller.AssignGroupAddress(addr)
-	//iface , err := net.InterfaceByName("lo")
-	//checkError(err)
-	//conn, err := net.ListenMulticastUDP("udp4", iface , addr) // MULTICAST SOCKET
-	//checkError(err)
-	//
-	//fmt.Println("Waiting multicast messages...")
-	//_,err = conn.WriteToUDP([]byte("hello world"),addr)
-	//for {
-	//	buf := make([]byte,util.BUFFER_SIZE) // INITIALIZE THE BUFFER
-	//	checkError(err)
-	//	n, addr, err := conn.ReadFromUDP(buf[0:]) // READ IT
-	//	fmt.Println("Message received from "+addr.String())
-	//	fmt.Println("message: "+string(buf[0:n]))
-	//	checkError(err)
-	//}
-
-}
-
-func parse(n int, buffer []byte){
-	fmt.Println("Client: Message received from server")
-	message := model.Message{}
-	err := json.Unmarshal(buffer[0:n],&message)
-	if err != nil {
-		return
-	}
-	switch message.Header {
-	case util.RESPONSE:
-		switch message.Type {
-		case util.GROUP:
-			b, err := json.Marshal(message.Attachment)
-			var g model.Group
-			err = json.Unmarshal(b,&g)
-			fmt.Println(g)
-			if err != nil {
-				fmt.Print(err)
-			}
-		}
-	}
 }
 
 func main(){
