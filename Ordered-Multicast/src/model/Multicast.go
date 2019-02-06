@@ -89,7 +89,6 @@ func handle(this *MulticastListener){
 	n, _, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	protocol(msg,this) // PROTOCOL
-	fmt.Println("message:",msg)
 	if err != nil {
 		fmt.Println("Peer: Error, returning...")
 		return

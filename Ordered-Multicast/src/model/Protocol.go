@@ -13,11 +13,11 @@ type FifoOrder struct {
 	PROCESS_ID int `json:"PROCESS_ID"`
 	Current_seq int `json:"current_seq"`
 	Processes_sequences [MAX_PEERS]int `json:"message_sequences"` // This is where the messages sequences will be stored
-	Buff map[string]Messages `json:"buffer,omitempty"` // This is where the processes delayed messages will be stored
+	Buff Messages `json:"buffer,omitempty"` // This is where the processes delayed messages will be stored
 }
 
 func NewFifoOrder(PROCESS_ID int) *FifoOrder {
-	return &FifoOrder{PROCESS_ID: PROCESS_ID, Current_seq:0, Processes_sequences: [MAX_PEERS]int{}, Buff:make(map[string]Messages)}
+	return &FifoOrder{PROCESS_ID: PROCESS_ID, Current_seq:0, Processes_sequences: [MAX_PEERS]int{}, Buff: make(Messages)}
 }
 
 /**
@@ -28,12 +28,11 @@ func (this *FifoOrder) Buffer(message *Message){
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
 	if this.Buff[senderId] == nil {
-		m := make(Messages)
-		this.Buff[senderId] = m
+		this.Buff = make(map[string]map[int]*Message)
+		this.Buff[senderId] = make(map[int]*Message)
 	}
-	fmt.Println(this.Buff)
-	senderMessages := this.Buff[senderId] // GETS THE MESSAGES MAP FROM THE PEER
-	senderMessages[seq] = message // BUFFER IT todo verify why does it STILL nil
+	var senderMessages map[int]*Message = this.Buff[senderId] // GETS THE MESSAGES MAP FROM THE PEER
+	senderMessages[seq] = message // BUFFER IT
 }
 
 /**
