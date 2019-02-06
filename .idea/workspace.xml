@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b879e982-228f-44ff-b8d1-5a6bedf04dd5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go" beforeDir="false" afterPath="$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go" beforeDir="false" afterPath="$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go" beforeDir="false" afterPath="$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Ordered-Multicast/src/model/index.go" beforeDir="false" afterPath="$PROJECT_DIR$/Ordered-Multicast/src/model/index.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +17,44 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="91" selection-start-line="91" selection-end-line="91" />
+            <state relative-caret-position="310">
+              <caret line="76" column="1" lean-forward="true" selection-start-line="76" selection-start-column="1" selection-end-line="76" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Concurrency-Patterns/src/Generator.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="249">
+              <caret line="28" column="45" lean-forward="true" selection-start-line="28" selection-start-column="45" selection-end-line="28" selection-end-column="45" />
+              <folding>
+                <element signature="e#13#38#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="258">
+              <caret line="60" selection-start-line="60" selection-end-line="60" />
+              <folding>
+                <element signature="e#15#36#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="300">
+              <caret line="45" column="16" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -42,18 +75,6 @@
               <caret line="35" column="20" selection-start-line="35" selection-start-column="20" selection-end-line="35" selection-end-column="20" />
               <folding>
                 <element signature="e#16#186#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="30" column="44" lean-forward="true" selection-start-line="30" selection-start-column="44" selection-end-line="30" selection-end-column="44" />
-              <folding>
-                <element signature="e#15#36#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -80,17 +101,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/controller/Controller.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
+            <state>
               <caret line="35" column="35" selection-start-line="35" selection-start-column="35" selection-end-line="35" selection-end-column="35" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="45" selection-start-line="45" selection-end-line="45" />
             </state>
           </provider>
         </entry>
@@ -155,14 +167,14 @@
         <option value="$PROJECT_DIR$/Ordered-Multicast/src/server/UdpServer.go" />
         <option value="$PROJECT_DIR$/Ordered-Multicast/src/controller/Controller.go" />
         <option value="$PROJECT_DIR$/Ordered-Multicast/src/model/Message.go" />
-        <option value="$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/Concurrency-Patterns/Generator.go" />
         <option value="$PROJECT_DIR$/Concurrency-Patterns/src/Generator.go" />
         <option value="$PROJECT_DIR$/Ordered-Multicast/tests/main/Main.go" />
         <option value="$PROJECT_DIR$/Ordered-Multicast/src/model/index.go" />
-        <option value="$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go" />
         <option value="$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go" />
+        <option value="$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go" />
+        <option value="$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go" />
       </list>
     </option>
   </component>
@@ -185,6 +197,17 @@
             <path>
               <item name="distributed-systems" type="b2602c69:ProjectViewProjectNode" />
               <item name="distributed-systems" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="distributed-systems" type="b2602c69:ProjectViewProjectNode" />
+              <item name="distributed-systems" type="462c0819:PsiDirectoryNode" />
+              <item name="Concurrency-Patterns" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="distributed-systems" type="b2602c69:ProjectViewProjectNode" />
+              <item name="distributed-systems" type="462c0819:PsiDirectoryNode" />
+              <item name="Concurrency-Patterns" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="distributed-systems" type="b2602c69:ProjectViewProjectNode" />
@@ -318,6 +341,15 @@
       <configuration name="go test distributed-systems" configurationId="GoTestRunConfiguration" />
     </history-entry>
   </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1440" height="873" extended-state="6" />
     <editor active="true" />
@@ -327,15 +359,15 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49856323" weight="0.3170391" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49856323" visible="true" weight="0.3170391" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32960895" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" />
       <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="10" visible="true" weight="0.3226257" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.3226257" />
       <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.50143677" side_tool="true" weight="0.3170391" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -478,16 +510,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Concurrency-Patterns/src/Generator.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="5" lean-forward="true" selection-start-line="19" selection-start-column="5" selection-end-line="19" selection-end-column="5" />
-          <folding>
-            <element signature="e#13#38#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Ordered-Multicast/tests/main/Main.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -498,38 +520,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="45" selection-start-line="45" selection-end-line="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/controller/Controller.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="35" column="35" selection-start-line="35" selection-start-column="35" selection-end-line="35" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="91" selection-start-line="91" selection-end-line="91" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/index.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" selection-start-line="4" selection-end-line="4" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Message.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="12" />
         </state>
       </provider>
     </entry>
@@ -543,13 +537,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Message.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" selection-start-line="4" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/controller/Controller.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="35" column="35" selection-start-line="35" selection-start-column="35" selection-end-line="35" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Concurrency-Patterns/src/Generator.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="28" column="45" lean-forward="true" selection-start-line="28" selection-start-column="45" selection-end-line="28" selection-end-column="45" />
+          <folding>
+            <element signature="e#13#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/interfaces/main/Main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="45" column="16" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Protocol.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="30" column="44" lean-forward="true" selection-start-line="30" selection-start-column="44" selection-end-line="30" selection-end-column="44" />
+        <state relative-caret-position="258">
+          <caret line="60" selection-start-line="60" selection-end-line="60" />
           <folding>
             <element signature="e#15#36#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Ordered-Multicast/src/model/Multicast.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="310">
+          <caret line="76" column="1" lean-forward="true" selection-start-line="76" selection-start-column="1" selection-end-line="76" selection-end-column="1" />
         </state>
       </provider>
     </entry>

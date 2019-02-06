@@ -35,7 +35,7 @@ func (this *Application) Run()  {
 	peer := group.Peers[this.CLIENT_ADDR] // GET A PEER
 	cntrller.SetPeer(peer) // REPLACE THE OLD ONE IN THE CONTROLLER
 	cntrller.ConnectPeer("lo")  // CONNECT HIM
-	go cntrller.Peer().Listener.Listen() // START LISTENING TO CONNECTIONS
+	go cntrller.Peer().Listener.Listen() // START LISTENING FOR CONNECTIONS
 	time.Sleep(time.Second*4)
 	cntrller.Peer().Listener.Multicast(model.NewMessage(0,"eu","voce","e o zubumafoo","",nil))
 }
@@ -43,9 +43,10 @@ func (this *Application) Run()  {
 func main(){
 	app := NewApplication(CL1)
 	go app.Run()
+	fmt.Scanln()
 	time.Sleep(time.Second * 3)
-	app2 := NewApplication(CL2)
-	app2.Run()
+	//app2 := NewApplication(CL2)
+	//app2.Run()
 }
 
 /**

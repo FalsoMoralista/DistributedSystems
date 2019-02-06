@@ -21,22 +21,23 @@ func NewFifoOrder(PROCESS_ID int) *FifoOrder {
 }
 
 /**
-* Storage a message through the buffer
+* Storage a message through the buffer. // todo implement the buffer cleaner
 **/
 func (this *FifoOrder) Buffer(message *Message){
-	fmt.Println("Estado do buffer:", len(this.Buff))
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
-	if this.Buff[senderId] == nil {
+	if this.Buff == nil { // CHECK WHETHER THE BUFFER IS EMPTY todo verificar se há chance  do buffer ser resetado com mensagens dentro
 		this.Buff = make(map[string]map[int]*Message)
-		this.Buff[senderId] = make(map[int]*Message)
+		if this.Buff[senderId] == nil {
+			this.Buff[senderId] = make(map[int]*Message)
+		}
 	}
 	var senderMessages map[int]*Message = this.Buff[senderId] // GETS THE MESSAGES MAP FROM THE PEER
 	senderMessages[seq] = message // BUFFER IT
 }
 
 /**
-* Returns whether a message can be delivered to the application
+* Returns whether a message can be delivered to the application.
 **/
 func (this *FifoOrder) Receive(message *Message) bool{
 	var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
@@ -55,11 +56,20 @@ func (this *FifoOrder) Receive(message *Message) bool{
 /**
 * Register the send of a message in the protocol.
 **/
-func (this *FifoOrder) Send(obj interface{}) *Message{
-	this.Current_seq += 1 // INCREMENT THE SEQUENCER
-	this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
-	var id string = strconv.Itoa(this.PROCESS_ID) // PARSE THE PEER ADDRESS
-	var msg *Message = NewMessage(this.Current_seq,id,"","","",obj) // RETURNS A MESSAGE WITH THE INFO ABOVE
-	return msg
+func (this *FifoOrder) Send() chan error{
+	channel := make(chan error)
+	go func() {
+		fmt.Println("Esperando por mensagem de confirmação...")
+		var err = <- channel
+		if err == nil{
+			fmt.Println("Registrando mensagem no protocolo")
+			this.Current_seq += 1 // INCREMENT THE SEQUENCER
+			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
+			channel <- nil // todo verify
+		}else{
+			fmt.Println("Erro na transmissão de mensagem")
+		}
+	}()
+	return channel
 }
 

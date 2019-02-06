@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
+	"time"
 )
 
 const (
@@ -60,12 +62,17 @@ func (this *MulticastListener) isConnected() bool{
 /**
 *	Multicast a message through the assigned group.
 **/
-func (this *MulticastListener) Multicast(obj interface{}) error{
-	var msg *Message = this.Fifo_protocol.Send(obj) // STEP THROUGH THE FIFO PROTOCOL
-	bArray,err := json.Marshal(msg)
-
-	fmt.Println("Peer: sending message",msg)
+func (this *MulticastListener) Multicast(messsage *Message) error{
+	fmt.Print("Peer: Trying to multicast: ")
+	var channel chan error = this.Fifo_protocol.Send()
+	bArray,err := json.Marshal(messsage)
+	fmt.Printf("message -> %s \n", string(bArray))
 	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
+	time.Sleep(time.Second * 15)
+	channel <- err
+	if <- channel == nil{
+		fmt.Println("SUCESSO. retornando...")
+	}
 	return err
 }
 
@@ -88,7 +95,10 @@ func handle(this *MulticastListener){
 	buffer := make([]byte, BUFFER_SIZE)
 	n, _, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
-	protocol(msg,this) // PROTOCOL
+	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // todo verify why this dont work
+		//fmt.Println("Mensagem recebida", msg)
+	}
+	//protocol(msg,this) // PROTOCOL
 	if err != nil {
 		fmt.Println("Peer: Error, returning...")
 		return
