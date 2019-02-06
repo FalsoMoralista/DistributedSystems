@@ -15,7 +15,7 @@ const (
 type MulticastListener struct {
 	Socket *net.UDPConn `json:"socket,omitempty"`
  	GROUP_ADDRESS *net.UDPAddr `json:"group_address,omitempty"`
-	Fifo_protocol *FifoOrder `json:"fifo_protocol"`
+	Fifo_protocol *FifoOrder `json:"fifo_protocol"` // TODO IMPLEMENT COMMUNICATION BETWEEN MULTICAST AND PROTOCOL USING CHANNELS
 	connected bool
 }
 

@@ -13,23 +13,27 @@ type FifoOrder struct {
 	PROCESS_ID int `json:"PROCESS_ID"`
 	Current_seq int `json:"current_seq"`
 	Processes_sequences [MAX_PEERS]int `json:"message_sequences"` // This is where the messages sequences will be stored
-	Buff Messages `json:"buffer,omitempty"` // This is where the processes delayed messages will be stored
+	Buff map[string]Messages `json:"buffer,omitempty"` // This is where the processes delayed messages will be stored
 }
 
 func NewFifoOrder(PROCESS_ID int) *FifoOrder {
-	return &FifoOrder{PROCESS_ID: PROCESS_ID, Current_seq:0, Processes_sequences: [MAX_PEERS]int{}, Buff:make(Messages)}
+	return &FifoOrder{PROCESS_ID: PROCESS_ID, Current_seq:0, Processes_sequences: [MAX_PEERS]int{}, Buff:make(map[string]Messages)}
 }
 
 /**
 * Storage a message through the buffer
 **/
 func (this *FifoOrder) Buffer(message *Message){
+	fmt.Println("Estado do buffer:", len(this.Buff))
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
-	var senderMessages map[int]*Message = this.Buff[senderId] // GETS THE MESSAGES MAP FROM THE PEER
-	fmt.Println("mensagem a ser bufferizada ->",message)
-	fmt.Println("buffer status:",senderMessages[seq]) // Breaking application
-	senderMessages[seq] = message // BUFFER IT todo verify why does it is nil
+	if this.Buff[senderId] == nil {
+		m := make(Messages)
+		this.Buff[senderId] = m
+	}
+	fmt.Println(this.Buff)
+	senderMessages := this.Buff[senderId] // GETS THE MESSAGES MAP FROM THE PEER
+	senderMessages[seq] = message // BUFFER IT todo verify why does it STILL nil
 }
 
 /**
@@ -39,11 +43,8 @@ func (this *FifoOrder) Receive(message *Message) bool{
 	var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
 	var deliver bool = this.Processes_sequences[process_id] == (message.Seq + 1) // VERIFY WHETHER THE SEQUENCE NUMBER (FROM MESSAGE) ITS EQUAL
 	if !deliver { // IF IS DIFFERENT
-		fmt.Println("entrou auqui")
 		fmt.Println("current sequence --->",this.Current_seq)
 		if !(this.Processes_sequences[process_id] >= message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
-			fmt.Print("buffer current state -> ")
-			fmt.Println(this.Buff)
 			this.Buffer(message) // BUFFER UNTIL IT`S TRUE
 		}
 	}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
