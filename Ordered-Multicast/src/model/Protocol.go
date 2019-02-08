@@ -25,9 +25,11 @@ func NewFifoOrder(PROCESS_ID int) *FifoOrder {
 * Storage a message through the buffer. // todo implement the buffer cleaner
 **/
 func (this *FifoOrder) Buffer(message *Message){
+	fmt.Printf("Bufferizando mensagem\n")
+	fmt.Println("Estado atual do buffer ->",this.Buff) // todo TEST THIS
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
-	if this.Buff == nil { // CHECK WHETHER THE BUFFER IS EMPTY todo verificar se há chance  do buffer ser resetado com mensagens dentro
+	if this.Buff == nil { // CHECK WHETHER THE BUFFER IS EMPTY todo verificar se há chance do buffer ser resetado com mensagens dentro
 		this.Buff = make(map[string]map[int]*Message)
 		if this.Buff[senderId] == nil {
 			this.Buff[senderId] = make(map[int]*Message)
@@ -46,9 +48,9 @@ func (this *FifoOrder) Receive(message *Message) chan bool{
 		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
 		var deliver bool = (this.Processes_sequences[process_id] + 1) == message.Seq // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
 		if !deliver { // IF IS DIFFERENT
-			fmt.Printf("%d: Current sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
+			fmt.Printf("%d: Current message sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
 			time.Sleep(time.Second * 2)
-			if !(this.Processes_sequences[process_id] >= message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
+			if (this.Processes_sequences[process_id] + 1 < message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
 				this.Buffer(message) // BUFFER UNTIL IT`S TRUE
 				channel <- false
 			}
@@ -70,18 +72,22 @@ func (this *FifoOrder) Receive(message *Message) chan bool{
 func (this *FifoOrder) Send() chan error{
 	channel := make(chan error)
 	go func() {
-		fmt.Printf("%d: Esperando confirmação para registrar mensagem no protocolo...\n",this.PROCESS_ID)
+		time.Sleep(time.Second * 1)
+		fmt.Printf("%d: Registrando mensagem no protocolo\n", this.PROCESS_ID)
 		time.Sleep(time.Second * 2)
+		// *********************************************************************************
 		var err = <- channel // STARTS TO WAIT FOR AN ERROR MESSAGE
-		if err == nil{ // IF IT IS NIL, REGISTER THE EVENT IN THE PROTOCOL
-			fmt.Printf("%d: Registrando mensagem no protocolo\n", this.PROCESS_ID)
+		if err == nil{ // IF IT IS NIL,
 			this.Current_seq += 1 // INCREMENT THE SEQUENCER
 			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
 			time.Sleep(time.Second * 2)
 			channel <- err // SENDS BACK THE EMPTY ERROR MESSAGE
-		}else{ // OTHERWISE SENDS BACK THE ERROR MESSAGE
+		}else{ // OTHERWISE SENDS BACK THE ERROR MESSAGE AND UNDO THE REGISTER OPERATION
 			fmt.Println("Erro na transmissão de mensagem")
 			time.Sleep(time.Second * 2)
+			// *********************************************************************************
+			this.Current_seq -= 1 // INCREMENT THE SEQUENCER
+			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
 			channel <- err
 		}
 	}()

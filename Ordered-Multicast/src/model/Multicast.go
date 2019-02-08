@@ -17,7 +17,8 @@ const (
 type MulticastListener struct {
 	Socket *net.UDPConn `json:"socket,omitempty"`
  	GROUP_ADDRESS *net.UDPAddr `json:"group_address,omitempty"`
-	Fifo_protocol *FifoOrder `json:"fifo_protocol"` // TODO IMPLEMENT COMMUNICATION BETWEEN MULTICAST AND PROTOCOL USING CHANNELS
+	Fifo_protocol *FifoOrder `json:"fifo_protocol"`
+	Message_Queue Messages
 	connected bool
 }
 
@@ -29,7 +30,7 @@ func NewMulticastListener(process_id int,GROUP_ADDRESS *net.UDPAddr) *MulticastL
 	iface , _ := net.InterfaceByName("lo")
 	sock, err := net.ListenMulticastUDP("udp4", iface,GROUP_ADDRESS)
 	checkError(err)
-	return &MulticastListener{Socket:sock, GROUP_ADDRESS: GROUP_ADDRESS, Fifo_protocol:NewFifoOrder(process_id)}
+	return &MulticastListener{Socket:sock, GROUP_ADDRESS: GROUP_ADDRESS, Fifo_protocol:NewFifoOrder(process_id), Message_Queue:make(Messages)}
 }
 
 /**
@@ -65,7 +66,7 @@ func (this *MulticastListener) isConnected() bool{
 func (this *MulticastListener) Listen() {
 	if this.isConnected(){
 		for {
-			handle(this)
+			this.listen()
 		}
 	}
 	fmt.Println("Error: peer not connected")
@@ -78,30 +79,43 @@ func (this *MulticastListener) Listen() {
 func (this *MulticastListener) Multicast(message *Message) error{
 	fmt.Printf("%s: Trying to multicast: ",message.SenderAddr)
 	time.Sleep(time.Second * 1)
-	var channel chan error = this.Fifo_protocol.Send()
-	message.Seq = this.Fifo_protocol.Current_seq + 1 // todo review whether this should be here
-	bArray,err := json.Marshal(message)
+	var channel chan error = this.Fifo_protocol.Send() // GET THE CHANNEL
+	message.Seq = this.Fifo_protocol.Current_seq +1 // INCREMENT THE MESSAGE SEQUENCE
+	bArray,err := json.Marshal(message) // ENCODE IT
 	fmt.Printf("message -> %s \n", string(bArray))
 	time.Sleep(time.Second * 2)
 	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
 	channel <- err
 	if <- channel == nil{
-		fmt.Printf("%s: Mensagem enviada com sucesso\n.",message.SenderAddr)
+		fmt.Printf("%s: Mensagem enviada para grupo com sucesso.\n",message.SenderAddr)
 		time.Sleep(time.Second * 2)
 	}
 	return err
 }
 
+func (this *MulticastListener) listen(){
+	if this.Message_Queue == nil {
+		this.Message_Queue = make(map[string]map[int]*Message)
+	}
+	buffer := make([]byte, BUFFER_SIZE)
+	n, _, _ := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
+	go this.handle(n,buffer) // STARTS GO ROUTINES("THREADS") TO HANDLE MESSAGES
+}
+
+
 /**
 * Handles received messages.
 **/
-func handle(this *MulticastListener){
-	buffer := make([]byte, BUFFER_SIZE)
-	n, _, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
+func (this *MulticastListener) handle(n int, buffer[]byte){
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // VERIFY WHETHER THE MESSAGE IS FROM THE OWN PROCESS
-		fmt.Printf("%d: Mensagem recebida \n", this.Fifo_protocol.PROCESS_ID)
-		fmt.Printf("%d: Sender id-> %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
+		fmt.Printf("%v: Mensagem recebida \n", this.Fifo_protocol.PROCESS_ID)
+		fmt.Printf("%v: Sender id-> %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
+		if this.Message_Queue[msg.SenderAddr] == nil {
+			this.Message_Queue[msg.SenderAddr] = make(map[int]*Message)
+		}
+		this.Message_Queue[msg.SenderAddr][msg.Seq] = msg // HOLD IN THE QUEUE
+		fmt.Println("queue status: ",*this.Message_Queue[msg.SenderAddr][msg.Seq]) // TODO TEST ADD ONE MORE ELEMENT AND PRINT
 		protocol(msg,this) // PROTOCOL
 	}
 	if err != nil {
