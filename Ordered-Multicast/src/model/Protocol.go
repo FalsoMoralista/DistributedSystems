@@ -44,9 +44,9 @@ func (this *FifoOrder) Receive(message *Message) chan bool{
 	var channel chan bool = make(chan bool)
 	go func() {
 		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
-		var deliver bool = this.Processes_sequences[process_id] == (message.Seq + 1) // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
+		var deliver bool = (this.Processes_sequences[process_id] + 1) == message.Seq // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
 		if !deliver { // IF IS DIFFERENT
-			fmt.Printf("%s: Current sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
+			fmt.Printf("%d: Current sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
 			time.Sleep(time.Second * 2)
 			if !(this.Processes_sequences[process_id] >= message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
 				this.Buffer(message) // BUFFER UNTIL IT`S TRUE
@@ -66,15 +66,15 @@ func (this *FifoOrder) Receive(message *Message) chan bool{
 * an anonymous function which soon get locked waiting for an error message from the channel. When the message arrives,
 * check if no error has occurred, if so, register the sending of the message, then return back the error message whether
 * it is empty or not.
-**/
+**/ // TODO refactor: the message has to be registered before
 func (this *FifoOrder) Send() chan error{
 	channel := make(chan error)
 	go func() {
-		fmt.Printf("%s: Esperando confirmação para registrar mensagem no protocolo...\n",this.PROCESS_ID)
+		fmt.Printf("%d: Esperando confirmação para registrar mensagem no protocolo...\n",this.PROCESS_ID)
 		time.Sleep(time.Second * 2)
 		var err = <- channel // STARTS TO WAIT FOR AN ERROR MESSAGE
 		if err == nil{ // IF IT IS NIL, REGISTER THE EVENT IN THE PROTOCOL
-			fmt.Printf("%s: Registrando mensagem no protocolo\n", this.PROCESS_ID)
+			fmt.Printf("%d: Registrando mensagem no protocolo\n", this.PROCESS_ID)
 			this.Current_seq += 1 // INCREMENT THE SEQUENCER
 			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
 			time.Sleep(time.Second * 2)

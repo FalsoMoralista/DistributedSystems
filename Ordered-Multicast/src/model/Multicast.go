@@ -75,17 +75,18 @@ func (this *MulticastListener) Listen() {
 *	Multicast a message through the assigned group.
 *	Tries to multicast a message and then register the event synchronously in the protocol.
 **/
-func (this *MulticastListener) Multicast(messsage *Message) error{
-	fmt.Printf("%s: Trying to multicast: ",messsage.SenderAddr)
+func (this *MulticastListener) Multicast(message *Message) error{
+	fmt.Printf("%s: Trying to multicast: ",message.SenderAddr)
 	time.Sleep(time.Second * 1)
 	var channel chan error = this.Fifo_protocol.Send()
-	bArray,err := json.Marshal(messsage)
+	message.Seq = this.Fifo_protocol.Current_seq + 1 // todo review whether this should be here
+	bArray,err := json.Marshal(message)
 	fmt.Printf("message -> %s \n", string(bArray))
 	time.Sleep(time.Second * 2)
 	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
 	channel <- err
 	if <- channel == nil{
-		fmt.Printf("%s: Mensagem enviada com sucesso\n.",messsage.SenderAddr)
+		fmt.Printf("%s: Mensagem enviada com sucesso\n.",message.SenderAddr)
 		time.Sleep(time.Second * 2)
 	}
 	return err
