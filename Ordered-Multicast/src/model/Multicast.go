@@ -60,23 +60,6 @@ func (this *MulticastListener) isConnected() bool{
 }
 /***************************************************************************************************************************************************************************************************/
 /**
-*	Multicast a message through the assigned group.
-**/
-func (this *MulticastListener) Multicast(messsage *Message) error{
-	fmt.Print("Peer: Trying to multicast: ")
-	var channel chan error = this.Fifo_protocol.Send()
-	bArray,err := json.Marshal(messsage)
-	fmt.Printf("message -> %s \n", string(bArray))
-	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
-	time.Sleep(time.Second * 15)
-	channel <- err
-	if <- channel == nil{
-		fmt.Println("SUCESSO. retornando...")
-	}
-	return err
-}
-
-/**
 * Listens for multicast messages from the current assigned group.
 **/
 func (this *MulticastListener) Listen() {
@@ -89,16 +72,37 @@ func (this *MulticastListener) Listen() {
 }
 
 /**
+*	Multicast a message through the assigned group.
+*	Tries to multicast a message and then register the event synchronously in the protocol.
+**/
+func (this *MulticastListener) Multicast(messsage *Message) error{
+	fmt.Printf("%s: Trying to multicast: ",messsage.SenderAddr)
+	time.Sleep(time.Second * 1)
+	var channel chan error = this.Fifo_protocol.Send()
+	bArray,err := json.Marshal(messsage)
+	fmt.Printf("message -> %s \n", string(bArray))
+	time.Sleep(time.Second * 2)
+	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
+	channel <- err
+	if <- channel == nil{
+		fmt.Printf("%s: Mensagem enviada com sucesso\n.",messsage.SenderAddr)
+		time.Sleep(time.Second * 2)
+	}
+	return err
+}
+
+/**
 * Handles received messages.
 **/
 func handle(this *MulticastListener){
 	buffer := make([]byte, BUFFER_SIZE)
 	n, _, err := this.Socket.ReadFromUDP(buffer[0:]) // LISTEN FOR CONNECTIONS
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
-	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // todo verify why this dont work
-		//fmt.Println("Mensagem recebida", msg)
+	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // VERIFY WHETHER THE MESSAGE IS FROM THE OWN PROCESS
+		fmt.Printf("%d: Mensagem recebida \n", this.Fifo_protocol.PROCESS_ID)
+		fmt.Printf("%d: Sender id-> %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
+		protocol(msg,this) // PROTOCOL
 	}
-	//protocol(msg,this) // PROTOCOL
 	if err != nil {
 		fmt.Println("Peer: Error, returning...")
 		return
@@ -115,7 +119,8 @@ func decode(n int, buff []byte) (*Message, error){
 }
 
 func protocol(msg *Message, m *MulticastListener){
-	var deliver bool = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
+	var channel chan bool = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
+	var deliver bool = <- channel
 	fmt.Println("Can the message",msg.Seq,"from "+msg.SenderAddr+" be delivered to the Appplication? ->",deliver)
 }
 

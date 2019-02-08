@@ -6,6 +6,7 @@ import (
 	"distributed-systems/Ordered-Multicast/src/util"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -25,6 +26,7 @@ func NewApplication(CLIENT_ADDR string) *Application {
 
 func (this *Application) Run()  {
 	fmt.Println("Client: "+this.CLIENT_ADDR+" Requesting group")
+	time.Sleep(time.Second * 2)
 	cntrller := controller.NewController(this.CLIENT_ADDR)
 	m,_ := cntrller.Request(util.GROUP) // REQUEST A GROUP
 
@@ -37,16 +39,18 @@ func (this *Application) Run()  {
 	cntrller.ConnectPeer("lo")  // CONNECT HIM
 	go cntrller.Peer().Listener.Listen() // START LISTENING FOR CONNECTIONS
 	time.Sleep(time.Second*4)
-	cntrller.Peer().Listener.Multicast(model.NewMessage(0,"eu","voce","e o zubumafoo","",nil))
+	var myID string = strconv.Itoa(cntrller.Peer().Listener.Fifo_protocol.PROCESS_ID)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(1,myID,"eu","voce","e o zubumafoo",nil))
 }
 
 func main(){
 	app := NewApplication(CL1)
 	go app.Run()
-	fmt.Scanln()
 	time.Sleep(time.Second * 3)
-	//app2 := NewApplication(CL2)
-	//app2.Run()
+	app2 := NewApplication(CL2)
+	app2.Run()
+	fmt.Scanln()
+
 }
 
 /**

@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 const (
@@ -39,35 +40,49 @@ func (this *FifoOrder) Buffer(message *Message){
 /**
 * Returns whether a message can be delivered to the application.
 **/
-func (this *FifoOrder) Receive(message *Message) bool{
-	var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
-	var deliver bool = this.Processes_sequences[process_id] == (message.Seq + 1) // VERIFY WHETHER THE SEQUENCE NUMBER (FROM MESSAGE) ITS EQUAL
-	if !deliver { // IF IS DIFFERENT
-		fmt.Println("current sequence --->",this.Current_seq)
-		if !(this.Processes_sequences[process_id] >= message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
-			this.Buffer(message) // BUFFER UNTIL IT`S TRUE
+func (this *FifoOrder) Receive(message *Message) chan bool{
+	var channel chan bool = make(chan bool)
+	go func() {
+		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
+		var deliver bool = this.Processes_sequences[process_id] == (message.Seq + 1) // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
+		if !deliver { // IF IS DIFFERENT
+			fmt.Printf("%s: Current sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
+			time.Sleep(time.Second * 2)
+			if !(this.Processes_sequences[process_id] >= message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
+				this.Buffer(message) // BUFFER UNTIL IT`S TRUE
+				channel <- false
+			}
+		}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
+			this.Processes_sequences[process_id] += 1
+			channel <- true
 		}
-	}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
-		this.Processes_sequences[process_id] += 1
-	}
-	return deliver
+	}()
+	return channel
 }
 
 /**
 * Register the send of a message in the protocol.
+* First it instances the channel that will be delivered back to this function caller, then it calls a "thread" to run
+* an anonymous function which soon get locked waiting for an error message from the channel. When the message arrives,
+* check if no error has occurred, if so, register the sending of the message, then return back the error message whether
+* it is empty or not.
 **/
 func (this *FifoOrder) Send() chan error{
 	channel := make(chan error)
 	go func() {
-		fmt.Println("Esperando por mensagem de confirmação...")
-		var err = <- channel
-		if err == nil{
-			fmt.Println("Registrando mensagem no protocolo")
+		fmt.Printf("%s: Esperando confirmação para registrar mensagem no protocolo...\n",this.PROCESS_ID)
+		time.Sleep(time.Second * 2)
+		var err = <- channel // STARTS TO WAIT FOR AN ERROR MESSAGE
+		if err == nil{ // IF IT IS NIL, REGISTER THE EVENT IN THE PROTOCOL
+			fmt.Printf("%s: Registrando mensagem no protocolo\n", this.PROCESS_ID)
 			this.Current_seq += 1 // INCREMENT THE SEQUENCER
 			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
-			channel <- nil // todo verify
-		}else{
+			time.Sleep(time.Second * 2)
+			channel <- err // SENDS BACK THE EMPTY ERROR MESSAGE
+		}else{ // OTHERWISE SENDS BACK THE ERROR MESSAGE
 			fmt.Println("Erro na transmissão de mensagem")
+			time.Sleep(time.Second * 2)
+			channel <- err
 		}
 	}()
 	return channel
