@@ -40,7 +40,9 @@ func (this *Application) Run()  {
 	go cntrller.Peer().Listener.Listen() // START LISTENING FOR CONNECTIONS
 	time.Sleep(time.Second*4)
 	var myID string = strconv.Itoa(cntrller.Peer().Listener.Fifo_protocol.PROCESS_ID)
-	cntrller.Peer().Listener.Multicast(model.NewMessage(1,myID,"eu","voce","e o zubumafoo",nil))
+	cntrller.Peer().Listener.Multicast(model.NewMessage(2,myID,"eu","voce","e o zubumafoo",nil))
+	time.Sleep(time.Second * 10)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(3,myID,"eu","voce","e o zubumafoo",nil))
 }
 
 

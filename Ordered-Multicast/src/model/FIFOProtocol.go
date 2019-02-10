@@ -25,11 +25,11 @@ func NewFifoOrder(PROCESS_ID int) *FifoOrder {
 * Storage a message through the buffer. // todo implement the buffer cleaner
 **/
 func (this *FifoOrder) Buffer(message *Message){
-	fmt.Printf("Bufferizando mensagem\n")
-	fmt.Println("Estado atual do buffer ->",this.Buff) // todo TEST THIS
+	fmt.Printf("Bufferizando mensagem %v enviada por: %v\n",message.Seq,message.SenderAddr)
+	time.Sleep(time.Second * 2)
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
-	if this.Buff == nil { // CHECK WHETHER THE BUFFER IS EMPTY todo verificar se há chance do buffer ser resetado com mensagens dentro
+	if this.Buff == nil { // CHECK WHETHER THE BUFFER HAS NOT BEEN INITIALIZED
 		this.Buff = make(map[string]map[int]*Message)
 		if this.Buff[senderId] == nil {
 			this.Buff[senderId] = make(map[int]*Message)
@@ -42,21 +42,21 @@ func (this *FifoOrder) Buffer(message *Message){
 /**
 * Returns whether a message can be delivered to the application.
 **/
-func (this *FifoOrder) Receive(message *Message) chan bool{
-	var channel chan bool = make(chan bool)
+func (this *FifoOrder) Receive(message *Message) chan []*Message{ // todo implement a queue and replace []*Message
+	var channel chan []*Message = make(chan []*Message)
 	go func() {
 		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
 		var deliver bool = (this.Processes_sequences[process_id] + 1) == message.Seq // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
 		if !deliver { // IF IS DIFFERENT
-			fmt.Printf("%d: Current message sequence -> %d \n",this.PROCESS_ID, this.Current_seq)
 			time.Sleep(time.Second * 2)
 			if (this.Processes_sequences[process_id] + 1 < message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
 				this.Buffer(message) // BUFFER UNTIL IT`S TRUE
-				channel <- false
+				channel <- nil // todo implement nil verification back in this function callers
 			}
 		}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
 			this.Processes_sequences[process_id] += 1
-			channel <- true
+			var cleaned_buffer []*Message = this.cleanBuffer(message)
+			channel <- cleaned_buffer // todo return all messages that user can receive ( clean buffer)
 		}
 	}()
 	return channel
@@ -92,5 +92,11 @@ func (this *FifoOrder) Send() chan error{
 		}
 	}()
 	return channel
+}
+
+func ( this *FifoOrder) cleanBuffer(auth *Message)[]*Message{
+	//var auth_seq int = auth.Seq
+	//var current_seq int = this.Current_seq
+	return nil
 }
 

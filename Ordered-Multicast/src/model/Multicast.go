@@ -80,7 +80,7 @@ func (this *MulticastListener) Multicast(message *Message) error{
 	fmt.Printf("%s: Trying to multicast: ",message.SenderAddr)
 	time.Sleep(time.Second * 1)
 	var channel chan error = this.Fifo_protocol.Send() // GET THE CHANNEL
-	message.Seq = this.Fifo_protocol.Current_seq +1 // INCREMENT THE MESSAGE SEQUENCE
+	//message.Seq = this.Fifo_protocol.Current_seq +2 // INCREMENT THE MESSAGE SEQUENCE
 	bArray,err := json.Marshal(message) // ENCODE IT
 	fmt.Printf("message -> %s \n", string(bArray))
 	time.Sleep(time.Second * 2)
@@ -109,13 +109,11 @@ func (this *MulticastListener) listen(){
 func (this *MulticastListener) handle(n int, buffer[]byte){
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // VERIFY WHETHER THE MESSAGE IS FROM THE OWN PROCESS
-		fmt.Printf("%v: Mensagem recebida \n", this.Fifo_protocol.PROCESS_ID)
-		fmt.Printf("%v: Sender id-> %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
+		fmt.Printf("%v: Mensagem recebida de %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
 		if this.Message_Queue[msg.SenderAddr] == nil {
-			this.Message_Queue[msg.SenderAddr] = make(map[int]*Message)
+			this.Message_Queue[msg.SenderAddr] = make(map[int]*Message) // INITIALIZE THE QUEUE IF NECESSARY
 		}
-		this.Message_Queue[msg.SenderAddr][msg.Seq] = msg // HOLD IN THE QUEUE
-		fmt.Println("queue status: ",*this.Message_Queue[msg.SenderAddr][msg.Seq]) // TODO TEST ADD ONE MORE ELEMENT AND PRINT
+		this.Message_Queue[msg.SenderAddr][msg.Seq] = msg // HOLD IN THE QUEUE // todo process queue requests
 		protocol(msg,this) // PROTOCOL
 	}
 	if err != nil {
