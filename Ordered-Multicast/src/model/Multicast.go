@@ -136,9 +136,11 @@ func protocol(msg *Message, m *MulticastListener){
 	var deliver *Queue = <- channel
 	fmt.Printf("Mensagens recebidas do protocolo:\n")
 	fmt.Println(deliver.Size()) // todo verify why does the application breaks here
-	//for deliver.Size() != 0 {
-	//	fmt.Printf("%v",deliver.Remove())
-	//}
+	if deliver != nil{
+		for deliver.Size() != 0 {
+			fmt.Printf("%v",deliver.Remove())
+		}
+	}
 }
 
 /**
