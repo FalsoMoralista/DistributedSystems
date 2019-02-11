@@ -42,8 +42,8 @@ func (this *FifoOrder) Buffer(message *Message){
 /**
 * Returns whether a message can be delivered to the application.
 **/
-func (this *FifoOrder) Receive(message *Message) chan []*Message{ // todo implement a queue and replace []*Message
-	var channel chan []*Message = make(chan []*Message)
+func (this *FifoOrder) Receive(message *Message) chan *Queue{ // todo implement a queue and replace []*Message
+	var channel chan *Queue = make(chan *Queue)
 	go func() {
 		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
 		var deliver bool = (this.Processes_sequences[process_id] + 1) == message.Seq // VERIFY WHETHER THE MESSAGE SEQUENCE NUMBER IS EQUAL
@@ -55,7 +55,7 @@ func (this *FifoOrder) Receive(message *Message) chan []*Message{ // todo implem
 			}
 		}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
 			this.Processes_sequences[process_id] += 1
-			var cleaned_buffer []*Message = this.cleanBuffer(message)
+			var cleaned_buffer *Queue = this.cleanBuffer(message)
 			channel <- cleaned_buffer // todo return all messages that user can receive ( clean buffer)
 		}
 	}()
@@ -94,9 +94,15 @@ func (this *FifoOrder) Send() chan error{
 	return channel
 }
 
-func ( this *FifoOrder) cleanBuffer(auth *Message)[]*Message{
-	//var auth_seq int = auth.Seq
-	//var current_seq int = this.Current_seq
-	return nil
+func ( this *FifoOrder) cleanBuffer(auth *Message) *Queue{
+	var queue *Queue = NewQueue()
+	queue.Add(auth)
+	var current_seq int = auth.Seq
+	usr_buffer := this.Buff[auth.SenderAddr]
+	for usr_buffer[current_seq + 1] != nil {
+			queue.Add(usr_buffer[current_seq +1])
+			current_seq ++
+	}
+	return queue
 }
 

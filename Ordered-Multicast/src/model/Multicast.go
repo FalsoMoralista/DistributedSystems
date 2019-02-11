@@ -132,9 +132,13 @@ func decode(n int, buff []byte) (*Message, error){
 }
 
 func protocol(msg *Message, m *MulticastListener){
-	var channel chan bool = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
-	var deliver bool = <- channel
-	fmt.Println("Can the message",msg.Seq,"from "+msg.SenderAddr+" be delivered to the Appplication? ->",deliver)
+	var channel chan *Queue = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
+	var deliver *Queue = <- channel
+	fmt.Printf("Mensagens recebidas do protocolo:\n")
+	fmt.Println(deliver.Size()) // todo verify why does the application breaks here
+	//for deliver.Size() != 0 {
+	//	fmt.Printf("%v",deliver.Remove())
+	//}
 }
 
 /**
