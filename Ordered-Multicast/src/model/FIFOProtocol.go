@@ -25,7 +25,7 @@ func NewFifoOrder(PROCESS_ID int) *FifoOrder {
 * Storage a message through the buffer. // todo implement the buffer cleaner
 **/
 func (this *FifoOrder) Buffer(message *Message){
-	fmt.Printf("Bufferizando mensagem %v enviada por: %v\n",message.Seq,message.SenderAddr)
+	fmt.Printf("Buffering message (ID = %v) sent by: Process %v\n",message.Seq,message.SenderAddr)
 	time.Sleep(time.Second * 2)
 	var senderId string = message.SenderAddr // GET THE SENDER ID
 	var seq int = message.Seq // "" "" MESSAGE SEQUENCE
@@ -42,7 +42,7 @@ func (this *FifoOrder) Buffer(message *Message){
 /**
 * Returns whether a message can be delivered to the application.
 **/
-func (this *FifoOrder) Receive(message *Message) chan *Queue{ // todo implement a queue and replace []*Message
+func (this *FifoOrder) Receive(message *Message) chan *Queue{
 	var channel chan *Queue = make(chan *Queue)
 	go func() {
 		var process_id ,_ = strconv.Atoi(message.SenderAddr) // PARSES THE SENDER PROCESS`S ID
@@ -51,12 +51,12 @@ func (this *FifoOrder) Receive(message *Message) chan *Queue{ // todo implement 
 			time.Sleep(time.Second * 2)
 			if (this.Processes_sequences[process_id] + 1 < message.Seq) { // AND NOT MINOR THAN THE ACTUAL SEQUENCE
 				this.Buffer(message) // BUFFER UNTIL IT`S TRUE
-				channel <- nil // todo implement nil verification back in this function callers
+				channel <- nil //
 			}
 		}else{ // OTHERWISE: INCREMENT ITS SEQUENCE AND DELIVER
 			this.Processes_sequences[process_id] += 1
 			var cleaned_buffer *Queue = this.cleanBuffer(message)
-			channel <- cleaned_buffer // todo return all messages that user can receive ( clean buffer)
+			channel <- cleaned_buffer
 		}
 	}()
 	return channel
@@ -72,20 +72,12 @@ func (this *FifoOrder) Receive(message *Message) chan *Queue{ // todo implement 
 func (this *FifoOrder) Send() chan error{
 	channel := make(chan error)
 	go func() {
-		time.Sleep(time.Second * 1)
-		fmt.Printf("%d: Registrando mensagem no protocolo\n", this.PROCESS_ID)
-		time.Sleep(time.Second * 2)
-		// *********************************************************************************
 		var err = <- channel // STARTS TO WAIT FOR AN ERROR MESSAGE
 		if err == nil{ // IF IT IS NIL,
 			this.Current_seq += 1 // INCREMENT THE SEQUENCER
 			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
-			time.Sleep(time.Second * 2)
 			channel <- err // SENDS BACK THE EMPTY ERROR MESSAGE
 		}else{ // OTHERWISE SENDS BACK THE ERROR MESSAGE AND UNDO THE REGISTER OPERATION
-			fmt.Println("Erro na transmissão de mensagem")
-			time.Sleep(time.Second * 2)
-			// *********************************************************************************
 			this.Current_seq -= 1 // INCREMENT THE SEQUENCER
 			this.Processes_sequences[this.PROCESS_ID] = this.Current_seq // REGISTER THE CURRENT SEQUENCE FOR THIS PEER IN THE LOGIC CLOCK
 			channel <- err
@@ -103,6 +95,8 @@ func ( this *FifoOrder) cleanBuffer(auth *Message) *Queue{
 			queue.Add(usr_buffer[current_seq +1])
 			current_seq ++
 	}
+	var id,_ = strconv.Atoi(auth.SenderAddr)
+	this.Processes_sequences[id] = current_seq
 	return queue
 }
 

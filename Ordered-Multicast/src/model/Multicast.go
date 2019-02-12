@@ -77,7 +77,7 @@ func (this *MulticastListener) Listen() {
 *	Tries to multicast a message and then register the event synchronously in the protocol.
 **/
 func (this *MulticastListener) Multicast(message *Message) error{
-	fmt.Printf("%s: Trying to multicast: ",message.SenderAddr)
+	fmt.Printf("%s - Trying to multicast ",message.SenderAddr)
 	time.Sleep(time.Second * 1)
 	var channel chan error = this.Fifo_protocol.Send() // GET THE CHANNEL
 	//message.Seq = this.Fifo_protocol.Current_seq +2 // INCREMENT THE MESSAGE SEQUENCE
@@ -87,7 +87,10 @@ func (this *MulticastListener) Multicast(message *Message) error{
 	_,err = this.Socket.WriteToUDP(bArray,this.GROUP_ADDRESS)
 	channel <- err
 	if <- channel == nil{
-		fmt.Printf("%s: Mensagem enviada para grupo com sucesso.\n",message.SenderAddr)
+		fmt.Printf("%s - Message sent sucessfully.\n",message.SenderAddr)
+		time.Sleep(time.Second * 2)
+	}else {
+		fmt.Println("Transmission error")
 		time.Sleep(time.Second * 2)
 	}
 	return err
@@ -109,7 +112,7 @@ func (this *MulticastListener) listen(){
 func (this *MulticastListener) handle(n int, buffer[]byte){
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // VERIFY WHETHER THE MESSAGE IS FROM THE OWN PROCESS
-		fmt.Printf("%v: Mensagem recebida de %s\n", this.Fifo_protocol.PROCESS_ID, msg.SenderAddr)
+		fmt.Printf("%v - Mensagem | ID = %v | recebida de Processo %s\n", this.Fifo_protocol.PROCESS_ID, msg.Seq,msg.SenderAddr)
 		if this.Message_Queue[msg.SenderAddr] == nil {
 			this.Message_Queue[msg.SenderAddr] = make(map[int]*Message) // INITIALIZE THE QUEUE IF NECESSARY
 		}
@@ -134,12 +137,18 @@ func decode(n int, buff []byte) (*Message, error){
 func protocol(msg *Message, m *MulticastListener){
 	var channel chan *Queue = m.Fifo_protocol.Receive(msg) // CHECKS WHETHER THE PROTOCOL AUTHORIZES THE DELIVERY OF THIS MESSAGE TO THE APPLICATION
 	var deliver *Queue = <- channel
-	fmt.Printf("Mensagens recebidas do protocolo:\n")
-	fmt.Println(deliver.Size()) // todo verify why does the application breaks here
 	if deliver != nil{
+		fmt.Printf("%v -  Received messages from buffer:\n",deliver.Size())
+		fmt.Printf("╔═══════════════════╦═══════════╦═════════════════════╗\n")
+		fmt.Printf("║     Message ID    ║    From   ║       Content       ║\n")
+		fmt.Printf("╠═══════════════════╬═══════════╬═════════════════════╣\n")
 		for deliver.Size() != 0 {
-			fmt.Printf("%v",deliver.Remove())
+			var cast *Message
+			rmv := *deliver.Remove()
+			cast = rmv.(*Message)
+			fmt.Printf("║      %v            ║   %v     ║         %v          ║\n", cast.Seq,cast.SenderAddr,cast.Header)
 		}
+		fmt.Printf("╚═══════════════════╩═══════════╩═════════════════════╝\n")
 	}
 }
 

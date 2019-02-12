@@ -38,13 +38,17 @@ func (this *Application) Run()  {
 	cntrller.SetPeer(peer) // REPLACE THE OLD ONE IN THE CONTROLLER
 	cntrller.ConnectPeer("lo")  // CONNECT HIM
 	go cntrller.Peer().Listener.Listen() // START LISTENING FOR CONNECTIONS
-	time.Sleep(time.Second*4)
+	time.Sleep(time.Second*2)
 	var myID string = strconv.Itoa(cntrller.Peer().Listener.Fifo_protocol.PROCESS_ID)
-	cntrller.Peer().Listener.Multicast(model.NewMessage(2,myID,"eu","voce","e o zubumafoo",nil))
+	cntrller.Peer().Listener.Multicast(model.NewMessage(2,myID,"eu","tudo","",nil))
 	time.Sleep(time.Second * 2)
-	cntrller.Peer().Listener.Multicast(model.NewMessage(3,myID,"eu","voce","e o zubumafoo",nil))
+	cntrller.Peer().Listener.Multicast(model.NewMessage(3,myID,"eu","bem","",nil))
+	time.Sleep(time.Second * 2)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(5,myID,"eu","voce?","",nil))
+	time.Sleep(time.Second * 2)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(1,myID,"eu","oi","",nil))
 	time.Sleep(time.Second * 3)
-	cntrller.Peer().Listener.Multicast(model.NewMessage(1,myID,"eu","voce","e o zubumafoo",nil))
+	cntrller.Peer().Listener.Multicast(model.NewMessage(4,myID,"eu","com","",nil))
 
 }
 
