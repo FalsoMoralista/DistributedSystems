@@ -5,6 +5,4 @@
 
 - [ ] Client/Server reliable communication
 - [ ] Realiable group communication
-- [ ] Failure detector
-- [ ] Election
-- [ ] Ordered group communication
+- [x] Ordered group communication
