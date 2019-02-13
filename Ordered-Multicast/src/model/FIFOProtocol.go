@@ -22,7 +22,7 @@ func NewFifoOrder(PROCESS_ID int) *FifoOrder {
 }
 
 /**
-* Storage a message through the buffer. // todo implement the buffer cleaner
+* Storage a message through the buffer.
 **/
 func (this *FifoOrder) Buffer(message *Message){
 	fmt.Printf("Buffering message (ID = %v) sent by: Process %v\n",message.Seq,message.SenderAddr)

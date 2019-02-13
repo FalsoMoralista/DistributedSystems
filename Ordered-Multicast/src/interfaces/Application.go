@@ -46,6 +46,8 @@ func (this *Application) Run()  {
 	time.Sleep(time.Second * 2)
 	cntrller.Peer().Listener.Multicast(model.NewMessage(5,myID,"eu","voce?","",nil))
 	time.Sleep(time.Second * 2)
+	cntrller.Peer().Listener.Multicast(model.NewMessage(2,myID,"eu","tudo","",nil))
+	time.Sleep(time.Second * 2)
 	cntrller.Peer().Listener.Multicast(model.NewMessage(1,myID,"eu","oi","",nil))
 	time.Sleep(time.Second * 3)
 	cntrller.Peer().Listener.Multicast(model.NewMessage(4,myID,"eu","com","",nil))

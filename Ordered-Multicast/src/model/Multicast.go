@@ -27,8 +27,8 @@ type MulticastListener struct {
 *	It can be modified by using the `Connect´ method.
 **/
 func NewMulticastListener(process_id int,GROUP_ADDRESS *net.UDPAddr) *MulticastListener {
-	iface , _ := net.InterfaceByName("lo")
-	sock, err := net.ListenMulticastUDP("udp4", iface,GROUP_ADDRESS)
+	//iface , _ := net.InterfaceByName("lo")
+	sock, err := net.ListenMulticastUDP("udp4", nil,GROUP_ADDRESS)
 	checkError(err)
 	return &MulticastListener{Socket:sock, GROUP_ADDRESS: GROUP_ADDRESS, Fifo_protocol:NewFifoOrder(process_id), Message_Queue:make(Messages)}
 }
@@ -112,7 +112,7 @@ func (this *MulticastListener) listen(){
 func (this *MulticastListener) handle(n int, buffer[]byte){
 	msg,err := decode(n,buffer) // DECODES A RECEIVED MESSAGE
 	if  !(msg.SenderAddr == strconv.Itoa(this.Fifo_protocol.PROCESS_ID)) { // VERIFY WHETHER THE MESSAGE IS FROM THE OWN PROCESS
-		fmt.Printf("%v - Mensagem | ID = %v | recebida de Processo %s\n", this.Fifo_protocol.PROCESS_ID, msg.Seq,msg.SenderAddr)
+		fmt.Printf("%v - Message | ID = %v | received from Process %s\n", this.Fifo_protocol.PROCESS_ID, msg.Seq,msg.SenderAddr)
 		if this.Message_Queue[msg.SenderAddr] == nil {
 			this.Message_Queue[msg.SenderAddr] = make(map[int]*Message) // INITIALIZE THE QUEUE IF NECESSARY
 		}
