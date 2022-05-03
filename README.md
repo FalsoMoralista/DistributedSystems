@@ -1,5 +1,5 @@
-# DistributedSystems Projects
-- Projects in Distributed Systems
+
+- Distributed Systems Projects
 
 ### Reliable UDP
 
