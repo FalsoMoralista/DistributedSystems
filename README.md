@@ -1,10 +1,6 @@
 
-- Distributed Systems Projects
+- Distributed Systems Projects:
 
-### Reliable UDP
+- [x] Ordered Multicast
 
-### Agreement Protocol
-
-### Ordered Multicast
-
-### Concurrency Patterns
+- [ ] Concurrency Patterns
